@@ -17,6 +17,70 @@ import dayjs from 'dayjs';
  *  4. 顶部摘要：当天总时长、次数、是否达标
  */
 
+// ===== 时间强校验 =====
+const TIME_REGEX = /^([01]?\d|2[0-3]):([0-5]?\d)$/;
+
+/**
+ * 严格校验 HH:mm 格式时间
+ * 合法：08:00, 09:30, 23:59
+ * 非法：25:99, abc, 08, 8:0, 08:60, 24:00
+ */
+const validateTimeFormat = (time: string): { ok: boolean; reason?: string } => {
+  if (!time) return { ok: false, reason: '请输入时间' };
+  const trimmed = time.trim();
+  if (!TIME_REGEX.test(trimmed)) {
+    if (trimmed.includes(':') === false) {
+      return { ok: false, reason: '格式必须是 HH:mm，如 08:30' };
+    }
+    const [h, m] = trimmed.split(':');
+    if (h.length === 0 || m.length === 0) {
+      return { ok: false, reason: '格式必须是 HH:mm，如 08:30' };
+    }
+    const hn = parseInt(h, 10);
+    const mn = parseInt(m, 10);
+    if (isNaN(hn) || isNaN(mn)) {
+      return { ok: false, reason: '小时和分钟必须是数字' };
+    }
+    if (hn < 0 || hn > 23) {
+      return { ok: false, reason: '小时必须在 00-23 之间' };
+    }
+    if (mn < 0 || mn > 59) {
+      return { ok: false, reason: '分钟必须在 00-59 之间' };
+    }
+    return { ok: false, reason: '时间格式不正确' };
+  }
+  return { ok: true };
+};
+
+/**
+ * 校验补录的开始结束时间是否合理
+ */
+const validateTimeRange = (
+  startTs: number,
+  endTs: number,
+  sessionDate: string
+): { ok: boolean; reason?: string } => {
+  if (endTs <= startTs) {
+    return { ok: false, reason: '结束时间必须晚于开始时间' };
+  }
+  const mins = Math.floor((endTs - startTs) / 60000);
+  if (mins < 1) {
+    return { ok: false, reason: '佩戴时长至少1分钟' };
+  }
+  if (mins > 1440) {
+    return { ok: false, reason: '单段时长不能超过24小时' };
+  }
+  const startDate = dayjs(startTs).format('YYYY-MM-DD');
+  const endDate = dayjs(endTs - 1).format('YYYY-MM-DD');
+  if (startDate !== sessionDate || endDate !== sessionDate) {
+    return { ok: false, reason: '补录的开始和结束时间都必须在当天' };
+  }
+  if (endTs > Date.now()) {
+    return { ok: false, reason: '结束时间不能晚于当前时间' };
+  }
+  return { ok: true };
+};
+
 interface EditingSession {
   id: string;
   field: 'start' | 'end';
@@ -128,22 +192,47 @@ const WearRecordPage: React.FC = () => {
   };
 
   const applyTimeChange = (session: WearSession, field: 'start' | 'end', timeStr: string) => {
+    // 先严格校验时间格式
+    const formatCheck = validateTimeFormat(timeStr);
+    if (!formatCheck.ok) {
+      Taro.showToast({ title: formatCheck.reason || '时间格式错误', icon: 'none', duration: 2000 });
+      return;
+    }
+
     if (field === 'start') {
       const newStart = timeToTs(session.date, timeStr, session.startTs);
       if (session.endTs && newStart >= session.endTs) {
-        Taro.showToast({ title: '开始时间必须早于结束时间', icon: 'none' });
+        Taro.showToast({ title: '开始时间必须早于结束时间', icon: 'none', duration: 2000 });
+        return;
+      }
+      const mins = session.endTs ? Math.floor((session.endTs - newStart) / 60000) : 0;
+      if (session.endTs && mins < 1) {
+        Taro.showToast({ title: '时长至少1分钟', icon: 'none', duration: 2000 });
+        return;
+      }
+      if (newStart > Date.now()) {
+        Taro.showToast({ title: '开始时间不能晚于当前', icon: 'none', duration: 2000 });
         return;
       }
       updateSession(session.id, { startTs: newStart });
       Taro.showToast({ title: '已更新开始时间', icon: 'success' });
     } else {
       if (!session.endTs && session.id === currentSessionId) {
-        Taro.showToast({ title: '正在进行的 session 请用取下按钮', icon: 'none' });
+        Taro.showToast({ title: '正在进行的请用取下按钮', icon: 'none', duration: 2000 });
         return;
       }
       const newEnd = timeToTs(session.date, timeStr, session.endTs || Date.now());
       if (newEnd <= session.startTs) {
-        Taro.showToast({ title: '结束时间必须晚于开始时间', icon: 'none' });
+        Taro.showToast({ title: '结束时间必须晚于开始时间', icon: 'none', duration: 2000 });
+        return;
+      }
+      const mins = Math.floor((newEnd - session.startTs) / 60000);
+      if (mins < 1) {
+        Taro.showToast({ title: '时长至少1分钟', icon: 'none', duration: 2000 });
+        return;
+      }
+      if (newEnd > Date.now()) {
+        Taro.showToast({ title: '结束时间不能晚于当前', icon: 'none', duration: 2000 });
         return;
       }
       updateSession(session.id, { endTs: newEnd });
@@ -173,23 +262,46 @@ const WearRecordPage: React.FC = () => {
   };
 
   const handleSaveManual = () => {
-    const startTs = timeToTs(activeDate, addStart, Date.now());
-    const endTs = timeToTs(activeDate, addEnd, Date.now());
-    if (endTs <= startTs) {
-      Taro.showToast({ title: '结束时间必须晚于开始', icon: 'none' });
+    // 1. 校验格式
+    const startFormat = validateTimeFormat(addStart);
+    if (!startFormat.ok) {
+      Taro.showToast({ title: startFormat.reason || '开始时间格式错误', icon: 'none', duration: 2000 });
       return;
     }
+    const endFormat = validateTimeFormat(addEnd);
+    if (!endFormat.ok) {
+      Taro.showToast({ title: endFormat.reason || '结束时间格式错误', icon: 'none', duration: 2000 });
+      return;
+    }
+
+    const startTs = timeToTs(activeDate, addStart.trim(), Date.now());
+    const endTs = timeToTs(activeDate, addEnd.trim(), Date.now());
+
+    // 2. 校验范围
+    const rangeCheck = validateTimeRange(startTs, endTs, activeDate);
+    if (!rangeCheck.ok) {
+      Taro.showToast({ title: rangeCheck.reason || '时间范围错误', icon: 'none', duration: 2000 });
+      return;
+    }
+
+    // 3. 补录成功，提示新增的时长
+    const mins = Math.floor((endTs - startTs) / 60000);
     addSession({
       date: activeDate,
       startTs,
       endTs,
-      note: addNote || '补录'
+      note: addNote.trim() || '补录'
     });
     setShowAddModal(false);
     setAddStart('08:00');
     setAddEnd('12:00');
     setAddNote('');
-    Taro.showToast({ title: '已补录', icon: 'success' });
+    Taro.showModal({
+      title: '补录成功',
+      content: `新增 ${formatDuration(mins)} 佩戴记录\n\n将同步到首页、打卡页和本周统计`,
+      confirmText: '好的',
+      showCancel: false
+    });
     setTick(prev => prev + 1);
   };
 
@@ -359,8 +471,13 @@ const WearRecordPage: React.FC = () => {
                         className={styles.editConfirm}
                         onClick={() => {
                           const v = editing.currentValue.trim();
-                          if (!/^\d{1,2}:\d{2}$/.test(v)) {
-                            Taro.showToast({ title: '格式错误，如 08:30', icon: 'none' });
+                          const check = validateTimeFormat(v);
+                          if (!check.ok) {
+                            Taro.showToast({
+                              title: check.reason || '格式错误',
+                              icon: 'none',
+                              duration: 2000
+                            });
                             return;
                           }
                           applyTimeChange(session, editing.field, v);

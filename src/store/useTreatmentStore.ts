@@ -101,6 +101,8 @@ const ensureRubberBand = (records: RubberBandRecord[], date: string): RubberBand
 /**
  * 从 session 列表重新计算累计的 WearRecords
  * 单一数据源，避免不一致
+ * 关键：只统计已结束的 session（endTs !== null）
+ *      正在进行的 session 由 getCurrentWearMinutes 单独计算，避免重复累计
  */
 const recalcRecordsFromSessions = (
   sessions: WearSession[],
@@ -110,9 +112,11 @@ const recalcRecordsFromSessions = (
   existingRecords.forEach(r => recordsMap.set(r.date, { ...r, duration: 0, wearCount: 0, removeCount: 0 }));
 
   sessions.forEach(s => {
-    // 按跨天方式拆分每一段 session 到各自然日
+    // 只统计已结束的 session
+    if (s.endTs === null) return;
+
     const start = s.startTs;
-    const end = s.endTs || Date.now();
+    const end = s.endTs;
     if (end <= start) return;
 
     let curTs = start;

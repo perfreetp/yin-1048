@@ -58,17 +58,18 @@ const FamilyPage: React.FC = () => {
       }
     }
 
-    // 已保存访问
+    // 已保存访问：每次打开都重新校验，刷新也不绕过
     if (savedAccess && savedCode && savedVerified) {
       const r = verifyCodeInternal(savedCode, true);
       if (r.ok) {
         setHasAccess(true);
         setInviteCode(savedCode);
       } else {
-        // 本地码已失效，清
+        // 本地码已失效（患者重置了邀请码等），强制清理
         Taro.removeStorageSync(FAMILY_ACCESS_KEY);
         Taro.removeStorageSync(FAMILY_CODE_KEY);
         Taro.removeStorageSync(FAMILY_VERIFIED_KEY);
+        setErrorMsg(r.reason || '邀请码已失效，请重新输入');
       }
     }
     setTick(p => p + 1);
@@ -76,32 +77,38 @@ const FamilyPage: React.FC = () => {
 
   useDidShow(() => setTick(p => p + 1));
 
-  // 核心校验：
-  //  1. 本地存在患者端的 getFamilyShareCode() → 精确匹配
-  //  2. 否则允许 TEST1234（测试）
-  //  3. 允许任何格式正确的码（模拟跨设备，因为没有服务端）
-  //  4. 跨设备的码要求长度 6-12位 字母数字大写
+  // 核心校验（强校验）：
+  //  1. 本地患者端的 getFamilyShareCode() → 精准匹配
+  //  2. 测试码 TEST1234（仅本地体验用）
+  //  3. 其他一律拦截（包括格式看起来正确但不是患者分享的码）
+  //  刷新也不会绕过：Storage 存的码每次都重新校验
   const verifyCodeInternal = (code: string, allowSaved = false): { ok: boolean; reason?: string } => {
-    if (!code) return { ok: false, reason: '空' };
-    const upper = code.toUpperCase();
+    if (!code) return { ok: false, reason: '请输入邀请码' };
+    const upper = code.toUpperCase().trim();
 
-    // 本地患者端生成的码 优先精准匹配
-    const local = getFamilyShareCode();
-    if (local && local.toUpperCase() === upper) return { ok: true };
+    if (!VALID_CODE_REGEX.test(upper)) {
+      if (upper.length < 6) return { ok: false, reason: '邀请码至少6位字母数字' };
+      if (upper.length > 12) return { ok: false, reason: '邀请码最多12位' };
+      return { ok: false, reason: '邀请码只能是字母和数字' };
+    }
 
-    // 测试码
-    if (upper === TEST_CODE) return { ok: true };
-
-    // 预览模式：允许任何合法格式
-    if (isPreview && VALID_CODE_REGEX.test(upper)) return { ok: true };
-
-    // 跨设备：格式合法 + 不是本地存储过（模拟服务端白名单）
-    if (VALID_CODE_REGEX.test(upper)) {
+    // 优先匹配患者端真实分享的码（同台设备）
+    const localCode = getFamilyShareCode();
+    if (localCode && localCode.toUpperCase() === upper) {
       return { ok: true };
     }
 
-    if (upper.length < 6) return { ok: false, reason: '邀请码至少6位' };
-    return { ok: false, reason: '邀请码格式不对（6-12位字母数字）' };
+    // 测试码
+    if (upper === TEST_CODE) {
+      return { ok: true };
+    }
+
+    // 其他一律拒绝（哪怕格式正确，不是患者分享的）
+    if (localCode) {
+      return { ok: false, reason: '邀请码不正确，请向患者索要正确邀请码' };
+    } else {
+      return { ok: false, reason: '邀请码无效，请用 TEST1234 体验，或向患者索要' };
+    }
   };
 
   const saveAndEnter = (code: string, previewMode: boolean) => {
