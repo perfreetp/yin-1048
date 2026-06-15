@@ -4,7 +4,8 @@ export default defineAppConfig({
     'pages/checkin/index',
     'pages/message/index',
     'pages/record/index',
-    'pages/mine/index'
+    'pages/mine/index',
+    'pages/family/index'
   ],
   window: {
     backgroundTextStyle: 'light',

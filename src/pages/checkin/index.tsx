@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { formatDuration, generateWeekDays } from '@/utils/format';
@@ -12,31 +13,29 @@ const CheckinPage: React.FC = () => {
     isWearing, 
     toggleWear, 
     addRemoveRecord,
-    weeklyReport
+    getTodayDuration,
+    getWeeklyReport,
+    syncWithStorage
   } = useTreatmentStore();
 
-  const [currentDuration, setCurrentDuration] = useState(0);
+  const [tick, setTick] = useState(0);
 
-  const todayRecord = useMemo(() => {
-    const today = dayjs().format('YYYY-MM-DD');
-    return wearRecords.find(r => r.date === today);
-  }, [wearRecords]);
-
-  const baseDuration = todayRecord?.duration || 0;
-  const targetDuration = 1320;
-  const totalDuration = baseDuration + currentDuration;
+  useDidShow(() => {
+    syncWithStorage();
+    setTick(prev => prev + 1);
+  });
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    if (isWearing) {
-      timer = setInterval(() => {
-        setCurrentDuration(prev => prev + 1);
-      }, 60000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
+    if (!isWearing) return;
+    const timer = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(timer);
   }, [isWearing]);
+
+  const todayDuration = useMemo(() => getTodayDuration(), [getTodayDuration, tick]);
+  const targetDuration = 1320;
+  const weeklyReport = useMemo(() => getWeeklyReport(), [getWeeklyReport, tick]);
 
   const weekDays = useMemo(() => generateWeekDays(), []);
 
@@ -47,6 +46,7 @@ const CheckinPage: React.FC = () => {
 
   const handleToggleWear = () => {
     toggleWear();
+    setTick(prev => prev + 1);
     Taro.showToast({
       title: isWearing ? '已结束计时' : '开始佩戴计时',
       icon: 'none',
@@ -70,7 +70,7 @@ const CheckinPage: React.FC = () => {
     return { hours, mins };
   };
 
-  const { hours, mins } = formatTimeDisplay(totalDuration);
+  const { hours, mins } = formatTimeDisplay(todayDuration);
 
   return (
     <View className={styles.page}>
@@ -86,7 +86,7 @@ const CheckinPage: React.FC = () => {
             {hours}<Text className={styles.statusUnit}>小时</Text> {mins.toString().padStart(2, '0')}<Text className={styles.statusUnit}>分钟</Text>
           </View>
           <Text className={styles.statusProgress}>
-            目标 {formatDuration(targetDuration)} · 已完成 {Math.round(totalDuration / targetDuration * 100)}%
+            目标 {formatDuration(targetDuration)} · 已完成 {Math.min(100, Math.round(todayDuration / targetDuration * 100))}%
           </Text>
           
           <View className={`${styles.wearStatus} ${isWearing ? styles.wearing : styles.notWearing}`}>

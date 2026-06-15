@@ -1,40 +1,96 @@
-import React from 'react';
-import { View, Text, Image, Button } from '@tarojs/components';
+import React, { useState } from 'react';
+import { View, Text, Image, Button, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { getDaysBetween } from '@/utils/format';
 import dayjs from 'dayjs';
 
 const MinePage: React.FC = () => {
-  const { userInfo, stages, settings, updateSettings, weeklyReport } = useTreatmentStore();
+  const { 
+    userInfo, 
+    stages, 
+    settings, 
+    updateSettings, 
+    getWeeklyReport,
+    syncWithStorage
+  } = useTreatmentStore();
+
+  const [showTravelModal, setShowTravelModal] = useState(false);
+  const [travelStart, setTravelStart] = useState(settings.travelStartDate || '');
+  const [travelEnd, setTravelEnd] = useState(settings.travelEndDate || '');
+
+  useDidShow(() => {
+    syncWithStorage();
+  });
 
   const totalDays = getDaysBetween(userInfo.startDate, dayjs().format('YYYY-MM-DD'));
   const completedStages = stages.filter(s => s.isCompleted).length;
+  const weeklyReport = getWeeklyReport();
 
   const handleTravelModeToggle = () => {
-    const newValue = !settings.travelMode;
-    updateSettings({ travelMode: newValue });
+    if (!settings.travelMode) {
+      setTravelStart(dayjs().format('YYYY-MM-DD'));
+      setTravelEnd(dayjs().add(7, 'day').format('YYYY-MM-DD'));
+      setShowTravelModal(true);
+    } else {
+      updateSettings({ 
+        travelMode: false,
+        travelStartDate: undefined,
+        travelEndDate: undefined
+      });
+      Taro.showToast({
+        title: '出差模式已关闭',
+        icon: 'none',
+        duration: 1500
+      });
+    }
+  };
+
+  const handleConfirmTravel = () => {
+    if (!travelStart || !travelEnd) {
+      Taro.showToast({
+        title: '请选择出发和返回日期',
+        icon: 'none',
+        duration: 1500
+      });
+      return;
+    }
+    if (dayjs(travelEnd).isBefore(dayjs(travelStart))) {
+      Taro.showToast({
+        title: '返回日期不能早于出发日期',
+        icon: 'none',
+        duration: 1500
+      });
+      return;
+    }
+    updateSettings({
+      travelMode: true,
+      travelStartDate: travelStart,
+      travelEndDate: travelEnd
+    });
+    setShowTravelModal(false);
     Taro.showToast({
-      title: newValue ? '出差模式已开启' : '出差模式已关闭',
-      icon: 'none',
+      title: '出差模式已开启',
+      icon: 'success',
       duration: 1500
     });
   };
 
   const handleFamilyShare = () => {
-    Taro.showModal({
-      title: '家属代看',
-      content: '生成分享链接，让家属随时查看您的治疗进度。',
-      confirmText: '生成链接',
-      success: (res) => {
-        if (res.confirm) {
-          Taro.showToast({
-            title: '链接已复制',
-            icon: 'success',
-            duration: 1500
-          });
-        }
+    const shareCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const shareUrl = `orthodontic://family?code=${shareCode}`;
+    
+    Taro.setClipboardData({
+      data: shareUrl,
+      success: () => {
+        Taro.showModal({
+          title: '家属代看链接已复制',
+          content: `链接已复制到剪贴板，发送给家属即可查看您的治疗进度。\n\n邀请码：${shareCode}\n\n家属可在小程序首页输入邀请码查看进度。`,
+          confirmText: '好的',
+          showCancel: false
+        });
       }
     });
   };
@@ -69,6 +125,18 @@ const MinePage: React.FC = () => {
       icon: 'none',
       duration: 1500
     });
+  };
+
+  const getTravelDays = () => {
+    if (!settings.travelStartDate || !settings.travelEndDate) return 0;
+    return dayjs(settings.travelEndDate).diff(dayjs(settings.travelStartDate), 'day') + 1;
+  };
+
+  const getTravelProgress = () => {
+    if (!settings.travelMode || !settings.travelStartDate || !settings.travelEndDate) return 0;
+    const total = dayjs(settings.travelEndDate).diff(dayjs(settings.travelStartDate), 'day') + 1;
+    const passed = dayjs().diff(dayjs(settings.travelStartDate), 'day') + 1;
+    return Math.min(100, Math.max(0, Math.round((passed / total) * 100)));
   };
 
   return (
@@ -108,6 +176,32 @@ const MinePage: React.FC = () => {
         </View>
       </View>
 
+      {/* 出差模式提示 */}
+      {settings.travelMode && (
+        <View className={styles.menuSection}>
+          <View className={styles.travelNoticeCard}>
+            <View className={styles.travelNoticeHeader}>
+              <Text className={styles.travelNoticeIcon}>✈️</Text>
+              <View className={styles.travelNoticeInfo}>
+                <Text className={styles.travelNoticeTitle}>出差旅行模式已开启</Text>
+                <Text className={styles.travelNoticeDate}>
+                  {dayjs(settings.travelStartDate).format('MM.DD')} - {dayjs(settings.travelEndDate).format('MM.DD')} · 共{getTravelDays()}天
+                </Text>
+              </View>
+            </View>
+            <View className={styles.travelProgressWrap}>
+              <View className={styles.travelProgress}>
+                <View className={styles.travelProgressBar} style={{ width: `${getTravelProgress()}%` }} />
+              </View>
+              <Text className={styles.travelProgressText}>行程已过 {getTravelProgress()}%</Text>
+            </View>
+            <Text className={styles.travelNoticeDesc}>
+              📌 旅行期间：复诊/换牙套提醒会提前1天推送，佩戴提醒调整为每日早中晚3次，避免打扰您的行程
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* 功能列表 */}
       <View className={styles.menuSection}>
         <View className={styles.menuCard}>
@@ -124,7 +218,12 @@ const MinePage: React.FC = () => {
             <View className={`${styles.menuIcon} ${styles.iconOrange}`}>✈️</View>
             <View className={styles.menuContent}>
               <Text className={styles.menuTitle}>出差旅行模式</Text>
-              <Text className={styles.menuDesc}>开启后将减少提醒频率，避免打扰</Text>
+              <Text className={styles.menuDesc}>
+                {settings.travelMode 
+                  ? `${dayjs(settings.travelStartDate).format('MM月DD日')}出发，${dayjs(settings.travelEndDate).format('MM月DD日')}返回`
+                  : '开启后将减少提醒频率，避免打扰'
+                }
+              </Text>
             </View>
             <View className={styles.switchWrap} onClick={(e) => { e.stopPropagation(); handleTravelModeToggle(); }}>
               <View className={`${styles.switch} ${settings.travelMode ? styles.switchOn : ''}`}>
@@ -187,6 +286,75 @@ const MinePage: React.FC = () => {
       <View className={styles.bottomSection}>
         <Text className={styles.versionText}>正畸管家 v1.0.0</Text>
       </View>
+
+      {/* 出差模式设置弹窗 */}
+      {showTravelModal && (
+        <View className={styles.modalOverlay} onClick={() => setShowTravelModal(false)}>
+          <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>设置出差行程</Text>
+            <Text className={styles.modalDesc}>设置出差日期后，我们将调整提醒策略，让您安心出行</Text>
+            
+            <View className={styles.datePickerRow}>
+              <View className={styles.datePickerItem}>
+                <Text className={styles.datePickerLabel}>出发日期</Text>
+                <Input 
+                  type='text'
+                  className={styles.datePickerInput}
+                  value={travelStart}
+                  placeholder='选择出发日期'
+                  onClick={() => {
+                    Taro.showActionSheet({
+                      itemList: ['今天出发', '明天出发', '后天出发', '选择日期'],
+                      success: (res) => {
+                        if (res.tapIndex === 0) setTravelStart(dayjs().format('YYYY-MM-DD'));
+                        if (res.tapIndex === 1) setTravelStart(dayjs().add(1, 'day').format('YYYY-MM-DD'));
+                        if (res.tapIndex === 2) setTravelStart(dayjs().add(2, 'day').format('YYYY-MM-DD'));
+                      }
+                    });
+                  }}
+                />
+              </View>
+              <View className={styles.datePickerItem}>
+                <Text className={styles.datePickerLabel}>返回日期</Text>
+                <Input 
+                  type='text'
+                  className={styles.datePickerInput}
+                  value={travelEnd}
+                  placeholder='选择返回日期'
+                  onClick={() => {
+                    Taro.showActionSheet({
+                      itemList: ['3天后返回', '7天后返回', '14天后返回', '选择日期'],
+                      success: (res) => {
+                        if (res.tapIndex === 0) setTravelEnd(dayjs().add(3, 'day').format('YYYY-MM-DD'));
+                        if (res.tapIndex === 1) setTravelEnd(dayjs().add(7, 'day').format('YYYY-MM-DD'));
+                        if (res.tapIndex === 2) setTravelEnd(dayjs().add(14, 'day').format('YYYY-MM-DD'));
+                      }
+                    });
+                  }}
+                />
+              </View>
+            </View>
+
+            <View className={styles.reminderInfo}>
+              <Text className={styles.reminderInfoTitle}>📌 旅行期间提醒调整</Text>
+              <View className={styles.reminderInfoList}>
+                <Text className={styles.reminderInfoItem}>• 复诊/换牙套提醒：提前1天推送</Text>
+                <Text className={styles.reminderInfoItem}>• 佩戴提醒：调整为每日早中晚3次</Text>
+                <Text className={styles.reminderInfoItem}>• 夜间提醒：自动关闭，不打扰休息</Text>
+              </View>
+            </View>
+
+            <View className={styles.modalButtons}>
+              <Button className={styles.modalCancelBtn} onClick={() => setShowTravelModal(false)}>
+                取消
+              </Button>
+              <Button className={styles.modalConfirmBtn} onClick={handleConfirmTravel}>
+                开启出差模式
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };

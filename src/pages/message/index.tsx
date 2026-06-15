@@ -1,14 +1,28 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { formatRelativeDate } from '@/utils/format';
 import type { MessageType } from '@/types';
 
 const MessagePage: React.FC = () => {
-  const { messages, markMessageRead, getUnreadMessageCount } = useTreatmentStore();
+  const { 
+    messages, 
+    markMessageRead, 
+    markAllMessagesRead,
+    getUnreadMessageCount,
+    syncWithStorage,
+    settings
+  } = useTreatmentStore();
   const [activeCategory, setActiveCategory] = useState<MessageType | 'all'>('all');
+  const [tick, setTick] = useState(0);
+
+  useDidShow(() => {
+    syncWithStorage();
+    setTick(prev => prev + 1);
+  });
 
   const categories = [
     { key: 'all', label: '全部' },
@@ -21,9 +35,9 @@ const MessagePage: React.FC = () => {
   const filteredMessages = useMemo(() => {
     if (activeCategory === 'all') return messages;
     return messages.filter(msg => msg.type === activeCategory);
-  }, [messages, activeCategory]);
+  }, [messages, activeCategory, tick]);
 
-  const unreadCount = getUnreadMessageCount();
+  const unreadCount = useMemo(() => getUnreadMessageCount(), [getUnreadMessageCount, tick]);
 
   const getIconByType = (type: MessageType) => {
     const icons = {
@@ -50,11 +64,8 @@ const MessagePage: React.FC = () => {
   };
 
   const handleMarkAllRead = () => {
-    messages.forEach(msg => {
-      if (!msg.isRead) {
-        markMessageRead(msg.id);
-      }
-    });
+    markAllMessagesRead();
+    setTick(prev => prev + 1);
     Taro.showToast({
       title: '已全部标为已读',
       icon: 'success',

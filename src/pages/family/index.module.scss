@@ -1,0 +1,432 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $gradient-bg;
+  padding-bottom: 80rpx;
+}
+
+.header {
+  padding: $spacing-xl $page-padding;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.1) 0%, rgba(134, 239, 172, 0.1) 100%);
+  text-align: center;
+}
+
+.headerIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.headerTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.headerDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.inputSection {
+  padding: $spacing-lg $page-padding;
+}
+
+.inputCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+}
+
+.inputLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.codeInput {
+  width: 100%;
+  height: 100rpx;
+  text-align: center;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  letter-spacing: 8rpx;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+  color: $color-primary;
+  border: none;
+  margin-bottom: $spacing-lg;
+}
+
+.submitBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.tipText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+  margin-top: $spacing-lg;
+  line-height: 1.5;
+}
+
+/* 进度页面 */
+.progressPage {
+  padding: $page-padding;
+}
+
+.patientInfo {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.patientAvatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  background: $color-primary-bg;
+}
+
+.patientDetails {
+  flex: 1;
+}
+
+.patientName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.patientMeta {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.patientBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: $color-primary-bg;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+/* 治疗阶段 */
+.stageCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.stageIcon {
+  width: 80rpx;
+  height: 80rpx;
+  background: $color-primary-bg;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.stageInfo {
+  flex: 1;
+}
+
+.stageName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.stageDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.stageProgress {
+  height: 12rpx;
+  background: $color-bg-soft;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-xs;
+}
+
+.stageProgressBar {
+  height: 100%;
+  background: $gradient-primary;
+  border-radius: $radius-round;
+}
+
+.stageProgressText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 今日佩戴 */
+.todayCard {
+  text-align: center;
+}
+
+.todayDuration {
+  font-size: 64rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.todayDurationUnit {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-normal;
+}
+
+.todayTarget {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
+}
+
+.todayProgressBar {
+  height: 16rpx;
+  background: $color-bg-soft;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.todayProgressFill {
+  height: 100%;
+  background: $gradient-success;
+  border-radius: $radius-round;
+}
+
+.todayStatus {
+  font-size: $font-size-sm;
+  color: $color-success-dark;
+  font-weight: $font-weight-medium;
+}
+
+/* 下次复诊 */
+.appointmentCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.appointmentIcon {
+  width: 80rpx;
+  height: 80rpx;
+  background: rgba(253, 186, 116, 0.2);
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.appointmentInfo {
+  flex: 1;
+}
+
+.appointmentTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.appointmentDate {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.appointmentDoctor {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.appointmentDays {
+  text-align: center;
+}
+
+.daysNumber {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-warning-dark;
+}
+
+.daysLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+/* 连续打卡 */
+.streakCard {
+  text-align: center;
+  padding: $spacing-xl $spacing-lg;
+}
+
+.streakIcon {
+  font-size: 64rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.streakNumber {
+  font-size: 56rpx;
+  font-weight: $font-weight-bold;
+  color: $color-warning-dark;
+  margin-bottom: $spacing-xs;
+}
+
+.streakLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.streakDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  line-height: 1.5;
+}
+
+/* 阶段列表 */
+.stagesList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.stageItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+}
+
+.stageItemDot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+}
+
+.dotCompleted {
+  background: $color-success-dark;
+}
+
+.dotCurrent {
+  background: $color-primary;
+  box-shadow: 0 0 0 6rpx rgba(124, 140, 246, 0.2);
+}
+
+.dotPending {
+  background: $color-border;
+}
+
+.stageItemInfo {
+  flex: 1;
+}
+
+.stageItemName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 2rpx;
+}
+
+.stageItemDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+/* 底部 */
+.footer {
+  text-align: center;
+  padding: $spacing-xl $page-padding;
+}
+
+.refreshBtn {
+  @include button-reset;
+  padding: $spacing-sm $spacing-xl;
+  background: $color-bg-card;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  border-radius: $radius-round;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+.footerText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-md;
+}
+
+.switchBtn {
+  @include button-reset;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  background: transparent;
+  padding: $spacing-xs;
+  text-decoration: underline;
+}

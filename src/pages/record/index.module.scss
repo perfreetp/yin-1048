@@ -270,40 +270,122 @@
   padding: $spacing-md;
   background: $color-bg-soft;
   border-radius: $radius-md;
-  position: relative;
-  padding-left: $spacing-lg;
+  transition: all $transition-base;
 
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8rpx;
-    height: 60%;
-    background: $color-primary;
-    border-radius: $radius-round;
+  &:active {
+    opacity: 0.9;
   }
+}
+
+.appointmentItemExpanded {
+  background: $color-bg-card;
+  border: 2rpx solid $color-primary-bg;
+  box-shadow: 0 4rpx 16rpx rgba(124, 140, 246, 0.1);
+}
+
+.appointmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.appointmentHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.appointmentDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background: $color-primary;
+  flex-shrink: 0;
 }
 
 .appointmentDate {
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
-  margin-bottom: $spacing-xs;
+}
+
+.appointmentHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.appointmentDoctor {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.appointmentArrow {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  transition: transform $transition-base;
 }
 
 .appointmentConclusion {
   font-size: $font-size-sm;
   color: $color-text-secondary;
   line-height: 1.5;
-  @include text-ellipsis-multi(2);
+  padding-left: $spacing-lg;
 }
 
-.appointmentMore {
+.appointmentDetail {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+  padding-left: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.appointmentDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.appointmentDetailTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.appointmentNotes {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.appointmentNoteItem {
   font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  padding-left: $spacing-sm;
+}
+
+.nextAppointmentCard {
+  padding: $spacing-md;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.1) 0%, rgba(165, 180, 252, 0.1) 100%);
+  border-radius: $radius-md;
+  border: 1rpx solid $color-primary-bg;
+}
+
+.nextAppointmentDate {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
   color: $color-primary;
-  margin-top: $spacing-xs;
+  margin-bottom: 4rpx;
+}
+
+.nextAppointmentDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
 }
 
 /* 注意事项 */

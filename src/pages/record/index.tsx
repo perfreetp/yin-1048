@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Button, Textarea, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { doctorNotes } from '@/data/mockData';
@@ -14,12 +15,18 @@ const RecordPage: React.FC = () => {
     addPainRecord,
     oralPhotos,
     appointmentRecords,
-    addOralPhoto
+    addOralPhoto,
+    syncWithStorage
   } = useTreatmentStore();
 
   const [painLevel, setPainLevel] = useState(2);
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [painNote, setPainNote] = useState('');
+  const [expandedAppointment, setExpandedAppointment] = useState<number | null>(null);
+
+  useDidShow(() => {
+    syncWithStorage();
+  });
 
   const today = dayjs().format('YYYY-MM-DD');
   const todayRubber = rubberBandRecords.find(r => r.date === today);
@@ -220,15 +227,60 @@ const RecordPage: React.FC = () => {
         <Text className={styles.sectionTitle}>复诊记录</Text>
         <View className={styles.card}>
           <View className={styles.appointmentList}>
-            {appointmentRecords.slice(0, 2).map(record => (
-              <View key={record.id} className={styles.appointmentItem}>
-                <Text className={styles.appointmentDate}>
-                  {dayjs(record.date).format('YYYY年MM月DD日')} · {record.doctor}
-                </Text>
-                <Text className={styles.appointmentConclusion}>{record.conclusion}</Text>
-                <Text className={styles.appointmentMore}>查看详情 →</Text>
-              </View>
-            ))}
+            {appointmentRecords.map(record => {
+              const isExpanded = expandedAppointment === record.id;
+              return (
+                <View 
+                  key={record.id} 
+                  className={`${styles.appointmentItem} ${isExpanded ? styles.appointmentItemExpanded : ''}`}
+                  onClick={() => setExpandedAppointment(isExpanded ? null : record.id)}
+                >
+                  <View className={styles.appointmentHeader}>
+                    <View className={styles.appointmentHeaderLeft}>
+                      <View className={styles.appointmentDot} />
+                      <Text className={styles.appointmentDate}>
+                        {dayjs(record.date).format('YYYY年MM月DD日')}
+                      </Text>
+                    </View>
+                    <View className={styles.appointmentHeaderRight}>
+                      <Text className={styles.appointmentDoctor}>{record.doctor}</Text>
+                      <Text className={styles.appointmentArrow}>{isExpanded ? '↑' : '↓'}</Text>
+                    </View>
+                  </View>
+                  
+                  <Text className={styles.appointmentConclusion}>{record.conclusion}</Text>
+                  
+                  {isExpanded && (
+                    <View className={styles.appointmentDetail}>
+                      <View className={styles.appointmentDetailSection}>
+                        <Text className={styles.appointmentDetailTitle}>📝 本次注意事项</Text>
+                        <View className={styles.appointmentNotes}>
+                          {record.notes.map((note, idx) => (
+                            <Text key={idx} className={styles.appointmentNoteItem}>
+                              • {note}
+                            </Text>
+                          ))}
+                        </View>
+                      </View>
+                      
+                      {record.nextAppointment && (
+                        <View className={styles.appointmentDetailSection}>
+                          <Text className={styles.appointmentDetailTitle}>📅 下次复诊</Text>
+                          <View className={styles.nextAppointmentCard}>
+                            <Text className={styles.nextAppointmentDate}>
+                              {dayjs(record.nextAppointment).format('YYYY年MM月DD日')}
+                            </Text>
+                            <Text className={styles.nextAppointmentDesc}>
+                              {dayjs(record.nextAppointment).format('dddd')} 上午10:00 · {record.doctor}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
           </View>
         </View>
       </View>

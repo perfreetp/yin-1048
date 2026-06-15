@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { formatDuration, getDaysBetween, getProgressPercent } from '@/utils/format';
@@ -10,22 +11,35 @@ const HomePage: React.FC = () => {
   const { 
     userInfo, 
     stages, 
-    wearRecords, 
     isWearing, 
     toggleWear,
     appointmentRecords,
-    weeklyReport
+    getTodayDuration,
+    getWeeklyReport,
+    syncWithStorage
   } = useTreatmentStore();
+
+  const [tick, setTick] = useState(0);
+
+  useDidShow(() => {
+    syncWithStorage();
+    setTick(prev => prev + 1);
+  });
+
+  useEffect(() => {
+    if (!isWearing) return;
+    const timer = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [isWearing]);
 
   const currentStage = useMemo(() => stages.find(s => s.isCurrent), [stages]);
   
-  const todayRecord = useMemo(() => {
-    const today = dayjs().format('YYYY-MM-DD');
-    return wearRecords.find(r => r.date === today);
-  }, [wearRecords]);
-
-  const todayDuration = todayRecord?.duration || 0;
+  const todayDuration = useMemo(() => getTodayDuration(), [getTodayDuration, tick]);
   const targetDuration = 1320;
+
+  const weeklyReport = useMemo(() => getWeeklyReport(), [getWeeklyReport, tick]);
 
   const nextAppointment = useMemo(() => {
     const latest = appointmentRecords[0];
@@ -109,7 +123,7 @@ const HomePage: React.FC = () => {
           <View className={styles.todayInfo}>
             <Text className={styles.todayLabel}>今日已佩戴</Text>
             <Text className={styles.todayDuration}>{formatDuration(todayDuration)}</Text>
-            <Text className={styles.todayTarget}>目标 {formatDuration(targetDuration)} · {Math.round(todayDuration / targetDuration * 100)}%</Text>
+            <Text className={styles.todayTarget}>目标 {formatDuration(targetDuration)} · {Math.min(100, Math.round(todayDuration / targetDuration * 100))}%</Text>
           </View>
           <Button 
             className={`${styles.wearButton} ${!isWearing ? styles.wearButtonOff : ''}`}
