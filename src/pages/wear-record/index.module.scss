@@ -1,0 +1,548 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $gradient-bg;
+  padding-bottom: 80rpx;
+}
+
+/* 日期选择器 */
+.datePickerWrap {
+  background: $color-bg-card;
+  padding: $spacing-md 0 $spacing-md $page-padding;
+  border-bottom: 1rpx solid rgba(124, 140, 246, 0.08);
+  box-shadow: 0 2rpx 8rpx rgba(124, 140, 246, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.datePickerScroll {
+  white-space: nowrap;
+}
+
+.datePickerRow {
+  display: inline-flex;
+  gap: $spacing-sm;
+  padding-right: $page-padding;
+}
+
+.dateItem {
+  flex-shrink: 0;
+  min-width: 96rpx;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-soft;
+  border-radius: $radius-lg;
+  text-align: center;
+  position: relative;
+  transition: all $transition-base;
+}
+
+.dateItemActive {
+  background: $gradient-primary;
+}
+
+.dateDayLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.dateItemActive .dateDayLabel {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dateNumLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.dateItemActive .dateNumLabel {
+  color: $color-text-white;
+}
+
+.dateDot {
+  position: absolute;
+  bottom: 6rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8rpx;
+  height: 8rpx;
+  background: $color-success-dark;
+  border-radius: $radius-round;
+}
+
+.dateItemActive .dateDot {
+  background: $color-text-white;
+}
+
+/* 摘要 */
+.summarySection {
+  padding: $spacing-lg $page-padding;
+}
+
+.summaryCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.summaryTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.summaryBadge {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-round;
+}
+
+.badgeCompleted {
+  background: rgba(134, 239, 172, 0.25);
+  color: $color-success-dark;
+  font-weight: $font-weight-medium;
+}
+
+.badgePending {
+  background: rgba(253, 186, 116, 0.2);
+  color: $color-warning-dark;
+  font-weight: $font-weight-medium;
+}
+
+.summaryGrid {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.summaryItem {
+  flex: 1;
+  background: $color-bg-soft;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-xs;
+  text-align: center;
+}
+
+.summaryValue {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-bottom: 4rpx;
+}
+
+.summaryLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.targetBarWrap {
+  height: 16rpx;
+  background: $color-bg-soft;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-xs;
+}
+
+.targetBar {
+  height: 100%;
+  background: $color-warning-dark;
+  border-radius: $radius-round;
+  transition: width $transition-base;
+}
+
+.targetBarCompleted {
+  background: $gradient-success;
+}
+
+.targetHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+/* Session 列表 */
+.sessionsSection {
+  padding: 0 $page-padding;
+}
+
+.sessionsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sessionsTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.addBtn {
+  @include button-reset;
+  padding: $spacing-xs $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  background: $color-primary-bg;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+}
+
+.emptySessions {
+  text-align: center;
+  padding: $spacing-xl * 2 0;
+}
+
+.emptyIcon {
+  display: block;
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyAddBtn {
+  @include button-reset;
+  padding: $spacing-sm $spacing-xl;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  border-radius: $radius-button;
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.sessionCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+}
+
+.sessionOngoing {
+  border-color: rgba(124, 140, 246, 0.35);
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.06) 0%, $color-bg-card 100%);
+}
+
+.sessionTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sessionNote {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.crossDayTag {
+  display: inline-block;
+  margin-left: $spacing-xs;
+  padding: 2rpx 8rpx;
+  background: rgba(251, 146, 60, 0.18);
+  color: $color-warning-dark;
+  font-size: $font-size-xs;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+}
+
+.ongoingTag {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  background: rgba(124, 140, 246, 0.18);
+  color: $color-primary;
+  border-radius: $radius-round;
+  font-weight: $font-weight-semibold;
+}
+
+.durationPill {
+  font-size: $font-size-sm;
+  padding: 4rpx $spacing-sm;
+  background: $gradient-primary;
+  color: $color-text-white;
+  border-radius: $radius-round;
+  font-weight: $font-weight-semibold;
+}
+
+/* 时间行 */
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.timeBlock {
+  flex: 1;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+}
+
+.timeLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.timeValueWrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all $transition-base;
+}
+
+.timeValueWrapDisabled {
+  opacity: 0.7;
+}
+
+.timeValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.timeValueOngoing {
+  color: $color-primary;
+}
+
+.timeEditHint {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.arrowWrap {
+  width: 48rpx;
+  position: relative;
+  height: 60rpx;
+  flex-shrink: 0;
+}
+
+.arrowLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background: rgba(124, 140, 246, 0.35);
+}
+
+.arrowDotStart {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: $radius-round;
+  background: $color-success-dark;
+}
+
+.arrowDotEnd {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: $radius-round;
+  background: $color-primary;
+}
+
+.arrowDotPulse {
+  box-shadow: 0 0 0 6rpx rgba(124, 140, 246, 0.2);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 6rpx rgba(124, 140, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 10rpx rgba(124, 140, 246, 0.08);
+  }
+}
+
+/* 编辑行 */
+.editRow {
+  margin: $spacing-md 0 0;
+  padding: $spacing-md;
+  background: rgba(124, 140, 246, 0.08);
+  border-radius: $radius-md;
+}
+
+.editHint {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.editInput {
+  width: 100%;
+  height: 72rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-lg;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+  text-align: center;
+  letter-spacing: 4rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.editBtns {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.editCancel {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-bg-soft;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.editConfirm {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $gradient-primary;
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+/* 删除操作 */
+.sessionActions {
+  margin-top: $spacing-sm;
+  border-top: 1rpx solid rgba(124, 140, 246, 0.1);
+  padding-top: $spacing-sm;
+}
+
+.deleteBtn {
+  @include button-reset;
+  width: 100%;
+  height: 56rpx;
+  border-radius: $radius-md;
+  background: rgba(239, 68, 68, 0.08);
+  color: $color-error-dark;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+/* Modal 通用 */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: $page-padding;
+}
+
+.modalContent {
+  width: 100%;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: 0 24rpx 80rpx rgba(15, 23, 42, 0.35);
+}
+
+.modalTitle {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  text-align: center;
+  margin-bottom: 4rpx;
+}
+
+.modalSubtitle {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: center;
+  margin-bottom: $spacing-lg;
+}
+
+.modalRow {
+  margin-bottom: $spacing-md;
+}
+
+.modalLabel {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.modalInput {
+  width: 100%;
+  height: 80rpx;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-lg;
+  color: $color-text-primary;
+}
+
+.modalBtnRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.modalCancel {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $color-bg-soft;
+  color: $color-text-secondary;
+  font-size: $font-size-md;
+}
+
+.modalConfirm {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}

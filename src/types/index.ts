@@ -19,6 +19,16 @@ export interface WearRecord {
   isCompleted: boolean;
 }
 
+// 佩戴 session 明细（每一段戴上-取下）
+export interface WearSession {
+  id: string;           // 唯一ID（时间戳+随机）
+  date: string;         // 主日期（按开始时间的自然日归类）
+  startTs: number;      // 戴上时间戳
+  endTs: number | null; // 取下时间戳（null=正在佩戴）
+  minutes: number;      // 已结算分钟数；正在佩戴时为已过分钟
+  note?: string;        // 备注：如"餐后"、"清洁"、"其他"
+}
+
 // 消息类型
 export type MessageType = 'appointment' | 'aligner' | 'doctor' | 'system';
 
@@ -76,6 +86,9 @@ export interface UserInfo {
   hospital: string;
   startDate: string;
   totalDays: number;
+  currentAligner: number;   // 当前牙套副数
+  totalAligners: number;    // 总副数
+  doctorNotes: string[];    // 医生注意事项
 }
 
 // 打卡周报

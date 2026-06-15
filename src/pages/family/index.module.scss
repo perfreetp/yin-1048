@@ -3,13 +3,40 @@
 .page {
   min-height: 100vh;
   background: $gradient-bg;
-  padding-bottom: 80rpx;
+  padding-bottom: 120rpx;
 }
 
 .header {
-  padding: $spacing-xl $page-padding;
-  background: linear-gradient(135deg, rgba(124, 140, 246, 0.1) 0%, rgba(134, 239, 172, 0.1) 100%);
+  padding: $spacing-xl * 1.5 $page-padding;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.12) 0%, rgba(134, 239, 172, 0.1) 100%);
   text-align: center;
+}
+
+.headerIcon {
+  width: 120rpx;
+  height: 120rpx;
+  line-height: 120rpx;
+  font-size: 64rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-xl;
+  margin: 0 auto $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.headerTitle {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.headerDesc {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.7;
+  white-space: pre-line;
 }
 
 /* 预览和访问 banner */
@@ -23,20 +50,20 @@
   font-size: $font-size-sm;
   color: $color-primary;
   font-weight: $font-weight-medium;
+  line-height: 1.6;
 }
 
 .accessBanner {
   margin: 0 0 $spacing-lg;
   padding: $spacing-md $spacing-lg;
-  background: rgba(134, 239, 172, 0.15);
-  border: 1rpx solid rgba(134, 239, 172, 0.4);
+  background: linear-gradient(135deg, rgba(134, 239, 172, 0.18) 0%, rgba(134, 239, 172, 0.05) 100%);
+  border: 1rpx solid rgba(134, 239, 172, 0.45);
   border-radius: $radius-lg;
 }
 
 .accessBanner Text {
   font-size: $font-size-sm;
   color: $color-success-dark;
-  font-weight: $font-weight-medium;
   line-height: 1.5;
 }
 
@@ -44,11 +71,45 @@
   display: block;
   font-size: $font-size-xs !important;
   color: $color-text-tertiary !important;
-  font-weight: $font-weight-normal !important;
   margin-top: 2rpx;
+  font-weight: $font-weight-normal !important;
 }
 
-/* 邀请码输入错误样式 */
+/* 验证页 */
+.inputSection {
+  padding: $spacing-xl $page-padding;
+}
+
+.inputCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+}
+
+.inputLabel {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: center;
+  margin-bottom: $spacing-md;
+}
+
+.codeInput {
+  width: 100%;
+  height: 96rpx;
+  background: $color-bg-soft;
+  border: 2rpx solid rgba(124, 140, 246, 0.2);
+  border-radius: $radius-lg;
+  padding: 0 $spacing-lg;
+  font-size: $font-size-xxl;
+  color: $color-primary;
+  text-align: center;
+  letter-spacing: 12rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-md;
+}
+
 .codeInputError {
   border: 2rpx solid $color-error-dark !important;
   background: rgba(239, 68, 68, 0.05) !important;
@@ -57,124 +118,92 @@
 .errorMsg {
   display: block;
   text-align: center;
-  margin: -$spacing-md 0 $spacing-lg;
+  margin: -$spacing-sm 0 $spacing-lg;
   font-size: $font-size-xs;
   color: $color-error-dark;
   line-height: 1.5;
-}
-
-.tipWrap {
-  margin-top: $spacing-lg;
-  text-align: center;
-}
-
-.testTip {
-  display: block;
-  margin-top: $spacing-md;
-  padding: $spacing-sm;
-  background: rgba(124, 140, 246, 0.08);
-  border-radius: $radius-md;
-  font-size: $font-size-xs;
-  color: $color-primary;
-  font-weight: $font-weight-medium;
-}
-
-.headerIcon {
-  font-size: 80rpx;
-  margin-bottom: $spacing-md;
-}
-
-.headerTitle {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-xs;
-}
-
-.headerDesc {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
-  line-height: 1.5;
-}
-
-.inputSection {
-  padding: $spacing-lg $page-padding;
-}
-
-.inputCard {
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-xl;
-  box-shadow: $shadow-card;
-}
-
-.inputLabel {
-  font-size: $font-size-md;
-  font-weight: $font-weight-medium;
-  color: $color-text-primary;
-  margin-bottom: $spacing-md;
-}
-
-.codeInput {
-  width: 100%;
-  height: 100rpx;
-  text-align: center;
-  font-size: $font-size-xxl;
-  font-weight: $font-weight-bold;
-  letter-spacing: 8rpx;
-  background: $color-bg-soft;
-  border-radius: $radius-md;
-  color: $color-primary;
-  border: none;
-  margin-bottom: $spacing-lg;
 }
 
 .submitBtn {
   @include button-reset;
   width: 100%;
   height: $button-height-lg;
-  border-radius: $radius-button;
   background: $gradient-primary;
   color: $color-text-white;
   font-size: $font-size-md;
+  border-radius: $radius-button;
   font-weight: $font-weight-semibold;
-  transition: all $transition-base;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 6rpx 20rpx rgba(124, 140, 246, 0.45);
+}
 
-  &:active {
-    opacity: 0.9;
-    transform: scale(0.98);
-  }
+.tipWrap {
+  text-align: center;
+  line-height: 1.6;
 }
 
 .tipText {
+  display: block;
   font-size: $font-size-xs;
   color: $color-text-tertiary;
-  text-align: center;
-  margin-top: $spacing-lg;
-  line-height: 1.5;
+  line-height: 1.8;
 }
 
-/* 进度页面 */
+.testTip {
+  display: block;
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(124, 140, 246, 0.08);
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 2rpx;
+}
+
+.urlTip {
+  display: block;
+  margin-top: $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.6;
+}
+
+.urlCode {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-success-dark;
+  font-weight: $font-weight-medium;
+  background: rgba(134, 239, 172, 0.12);
+  padding: 4rpx 8rpx;
+  border-radius: $radius-sm;
+  letter-spacing: 1rpx;
+}
+
+/* ============ 进度页 ============ */
 .progressPage {
-  padding: $page-padding;
+  padding: $spacing-lg $page-padding 0;
 }
 
+/* 患者信息 */
 .patientInfo {
-  background: $color-bg-card;
-  border-radius: $radius-xl;
-  padding: $spacing-lg;
-  margin-bottom: $spacing-lg;
-  box-shadow: $shadow-card;
   display: flex;
   align-items: center;
-  gap: $spacing-lg;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
 }
 
 .patientAvatar {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: $radius-round;
-  background: $color-primary-bg;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(124, 140, 246, 0.2);
+  flex-shrink: 0;
 }
 
 .patientDetails {
@@ -182,37 +211,40 @@
 }
 
 .patientName {
+  display: block;
   font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-bold;
   color: $color-text-primary;
   margin-bottom: 4rpx;
 }
 
 .patientMeta {
-  font-size: $font-size-sm;
+  font-size: $font-size-xs;
   color: $color-text-secondary;
 }
 
 .patientBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: $spacing-xs;
-  padding: $spacing-xs $spacing-sm;
-  background: $color-primary-bg;
+  padding: 6rpx $spacing-sm;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.2), rgba(134, 239, 172, 0.2));
   border-radius: $radius-round;
   font-size: $font-size-xs;
   color: $color-primary;
+  font-weight: $font-weight-semibold;
+  flex-shrink: 0;
 }
 
+/* section 通用 */
 .section {
   margin-bottom: $spacing-lg;
 }
 
 .sectionTitle {
+  display: block;
   font-size: $font-size-md;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
-  margin-bottom: $spacing-md;
+  margin-bottom: $spacing-sm;
+  padding-left: 4rpx;
 }
 
 .card {
@@ -222,61 +254,64 @@
   box-shadow: $shadow-card;
 }
 
-/* 治疗阶段 */
-.stageCard {
-  display: flex;
-  align-items: center;
-  gap: $spacing-lg;
+/* 顶部摘要卡 */
+.summarySection {
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.12) 0%, rgba(124, 140, 246, 0.03) 100%);
+  border-radius: $radius-xl;
+  border: 1rpx solid rgba(124, 140, 246, 0.25);
 }
 
-.stageIcon {
-  width: 80rpx;
-  height: 80rpx;
-  background: $color-primary-bg;
-  border-radius: $radius-lg;
+.summaryRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
-  flex-shrink: 0;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
 }
 
-.stageInfo {
+.summaryBlock {
   flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
 }
 
-.stageName {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-xs;
+.summaryBlockValue {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-bottom: 4rpx;
 }
 
-.stageDesc {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
+.summaryBlockLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.summaryProgressRow {
+  margin-top: $spacing-xs;
+}
+
+.summaryProgressBar {
+  height: 12rpx;
+  background: rgba(124, 140, 246, 0.15);
+  border-radius: $radius-round;
+  overflow: hidden;
   margin-bottom: $spacing-sm;
 }
 
-.stageProgress {
-  height: 12rpx;
-  background: $color-bg-soft;
-  border-radius: $radius-round;
-  overflow: hidden;
-  margin-bottom: $spacing-xs;
-}
-
-.stageProgressBar {
+.summaryProgressFill {
   height: 100%;
   background: $gradient-primary;
   border-radius: $radius-round;
+  transition: width $transition-base;
 }
 
-.stageProgressText {
+.summaryProgressText {
   font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  display: flex;
-  justify-content: space-between;
+  color: $color-text-secondary;
+  line-height: 1.6;
 }
 
 /* 今日佩戴 */
@@ -285,41 +320,173 @@
 }
 
 .todayDuration {
-  font-size: 64rpx;
+  font-size: $font-size-xxl * 1.1;
   font-weight: $font-weight-bold;
-  color: $color-primary;
+  color: $color-text-primary;
   margin-bottom: $spacing-xs;
 }
 
 .todayDurationUnit {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
+  font-size: $font-size-md;
   font-weight: $font-weight-normal;
+  color: $color-text-secondary;
 }
 
 .todayTarget {
+  display: block;
   font-size: $font-size-sm;
-  color: $color-text-tertiary;
+  color: $color-text-secondary;
   margin-bottom: $spacing-md;
 }
 
 .todayProgressBar {
-  height: 16rpx;
+  height: 14rpx;
   background: $color-bg-soft;
   border-radius: $radius-round;
   overflow: hidden;
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-xs;
 }
 
 .todayProgressFill {
   height: 100%;
-  background: $gradient-success;
+  background: $gradient-primary;
   border-radius: $radius-round;
+  transition: width $transition-base;
 }
 
 .todayStatus {
+  display: block;
   font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  line-height: 1.6;
+}
+
+/* 近7天趋势 */
+.trendCard {
+  position: relative;
+  padding-bottom: $spacing-xl;
+}
+
+.trendBars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  min-height: 260rpx;
+  padding-top: 40rpx;
+  position: relative;
+}
+
+.trendBarCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding-bottom: 60rpx;
+}
+
+.trendBarVal {
+  position: absolute;
+  top: 0;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.trendBar {
+  width: 100%;
+  max-width: 52rpx;
+  min-height: 8rpx;
+  background: rgba(124, 140, 246, 0.25);
+  border-radius: $radius-sm $radius-sm 0 0;
+  margin-top: 4rpx;
+  transition: height $transition-base;
+  position: absolute;
+  bottom: 60rpx;
+}
+
+.trendBarDone {
+  background: $gradient-primary;
+}
+
+.trendBarLabel {
+  position: absolute;
+  bottom: 28rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.trendBarCheck {
+  position: absolute;
+  bottom: 4rpx;
+  font-size: $font-size-xs;
   color: $color-success-dark;
+  font-weight: $font-weight-bold;
+}
+
+.trendTargetLine {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.trendTargetDash {
+  flex: 1;
+  height: 2rpx;
+  border-top: 2rpx dashed rgba(251, 146, 60, 0.5);
+}
+
+.trendTargetText {
+  padding: 0 $spacing-sm;
+  font-size: 20rpx;
+  color: $color-warning-dark;
+  background: $color-bg-card;
+  font-weight: $font-weight-medium;
+}
+
+.trendFooter {
+  margin-top: $spacing-md;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid rgba(124, 140, 246, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trendLegend {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.trendLegendDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  margin-right: 4rpx;
+}
+
+.trendLegendDotDone {
+  background: $gradient-primary;
+}
+
+.trendLegendDotPending {
+  background: rgba(124, 140, 246, 0.25);
+}
+
+.trendAvg {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
   font-weight: $font-weight-medium;
 }
 
@@ -327,18 +494,17 @@
 .appointmentCard {
   display: flex;
   align-items: center;
-  gap: $spacing-lg;
+  gap: $spacing-md;
 }
 
 .appointmentIcon {
-  width: 80rpx;
-  height: 80rpx;
+  width: 72rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  font-size: 40rpx;
   background: rgba(253, 186, 116, 0.2);
   border-radius: $radius-lg;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
   flex-shrink: 0;
 }
 
@@ -347,111 +513,160 @@
 }
 
 .appointmentTitle {
-  font-size: $font-size-md;
+  display: block;
+  font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
-  margin-bottom: $spacing-xs;
+  margin-bottom: 4rpx;
 }
 
 .appointmentDate {
-  font-size: $font-size-sm;
+  display: block;
+  font-size: $font-size-xs;
   color: $color-text-secondary;
-  margin-bottom: 4rpx;
+  margin-bottom: 2rpx;
 }
 
 .appointmentDoctor {
   font-size: $font-size-xs;
-  color: $color-text-tertiary;
+  color: $color-warning-dark;
+  font-weight: $font-weight-medium;
 }
 
 .appointmentDays {
   text-align: center;
+  background: linear-gradient(135deg, rgba(253, 186, 116, 0.25) 0%, rgba(251, 146, 60, 0.15) 100%);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-lg;
+  min-width: 96rpx;
 }
 
 .daysNumber {
-  font-size: $font-size-xxl;
+  display: block;
+  font-size: $font-size-xl;
   font-weight: $font-weight-bold;
   color: $color-warning-dark;
+  line-height: 1;
 }
 
 .daysLabel {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-}
-
-/* 连续打卡 */
-.streakCard {
-  text-align: center;
-  padding: $spacing-xl $spacing-lg;
-}
-
-.streakIcon {
-  font-size: 64rpx;
-  margin-bottom: $spacing-sm;
-}
-
-.streakNumber {
-  font-size: 56rpx;
-  font-weight: $font-weight-bold;
+  font-size: 20rpx;
   color: $color-warning-dark;
-  margin-bottom: $spacing-xs;
+  opacity: 0.8;
 }
 
-.streakLabel {
+/* 医生注意事项 */
+.notesCard {
+  padding: 0;
+}
+
+.notesList {
+  padding: 0;
+}
+
+.noteItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid rgba(124, 140, 246, 0.1);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.noteIndex {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  border-radius: $radius-round;
+  margin-top: 2rpx;
+}
+
+.noteText {
+  flex: 1;
   font-size: $font-size-sm;
-  color: $color-text-secondary;
+  color: $color-text-primary;
+  line-height: 1.7;
 }
 
-.streakDesc {
+.notesFooter {
+  margin-top: $spacing-md;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed rgba(124, 140, 246, 0.2);
+  text-align: right;
+}
+
+.notesUpdated {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
-  margin-top: $spacing-sm;
-  line-height: 1.5;
+  font-style: italic;
 }
 
-/* 阶段列表 */
+/* 治疗阶段 */
 .stagesList {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
+  position: relative;
+  padding-left: $spacing-md;
 }
 
 .stageItem {
-  display: flex;
-  align-items: center;
-  gap: $spacing-md;
-  padding: $spacing-md;
-  background: $color-bg-soft;
-  border-radius: $radius-md;
+  position: relative;
+  padding-left: $spacing-lg;
+  padding-bottom: $spacing-lg;
+  border-left: 2rpx solid rgba(124, 140, 246, 0.25);
+
+  &:last-child {
+    padding-bottom: 0;
+    border-left-color: transparent;
+  }
 }
 
 .stageItemDot {
-  width: 24rpx;
-  height: 24rpx;
+  position: absolute;
+  left: -12rpx;
+  top: 0;
+  width: 22rpx;
+  height: 22rpx;
   border-radius: $radius-round;
-  flex-shrink: 0;
+  background: $color-bg-soft;
+  border: 4rpx solid $color-bg-card;
+  box-shadow: 0 0 0 2rpx rgba(124, 140, 246, 0.25);
 }
 
 .dotCompleted {
   background: $color-success-dark;
+  box-shadow: 0 0 0 2rpx rgba(134, 239, 172, 0.3);
 }
 
 .dotCurrent {
   background: $color-primary;
-  box-shadow: 0 0 0 6rpx rgba(124, 140, 246, 0.2);
+  box-shadow: 0 0 0 6rpx rgba(124, 140, 246, 0.15);
 }
 
 .dotPending {
-  background: $color-border;
+  background: $color-bg-soft;
 }
 
 .stageItemInfo {
-  flex: 1;
+  padding-top: 0;
 }
 
 .stageItemName {
+  display: block;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
   color: $color-text-primary;
   margin-bottom: 2rpx;
 }
@@ -463,37 +678,38 @@
 
 /* 底部 */
 .footer {
+  padding: $spacing-xl 0 $spacing-lg * 2;
   text-align: center;
-  padding: $spacing-xl $page-padding;
 }
 
 .refreshBtn {
   @include button-reset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
   padding: $spacing-sm $spacing-xl;
-  background: $color-bg-card;
+  background: rgba(124, 140, 246, 0.1);
   color: $color-primary;
   font-size: $font-size-sm;
   border-radius: $radius-round;
-  box-shadow: $shadow-card;
-  transition: all $transition-base;
-
-  &:active {
-    transform: scale(0.95);
-    opacity: 0.9;
-  }
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-sm;
 }
 
 .footerText {
+  display: block;
   font-size: $font-size-xs;
   color: $color-text-tertiary;
-  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
 }
 
 .switchBtn {
   @include button-reset;
+  display: inline-block;
+  padding: $spacing-sm $spacing-lg;
   font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  background: transparent;
-  padding: $spacing-xs;
-  text-decoration: underline;
+  color: $color-text-secondary;
+  background: $color-bg-soft;
+  border-radius: $radius-round;
 }

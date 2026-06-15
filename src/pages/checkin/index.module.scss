@@ -230,6 +230,47 @@
   font-weight: $font-weight-medium;
 }
 
+/* 佩戴明细入口 */
+.recordEntry {
+  margin: 0 $page-padding $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.1) 0%, rgba(124, 140, 246, 0.02) 100%);
+  border: 1rpx solid rgba(124, 140, 246, 0.2);
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.recordEntryIcon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.recordEntryContent {
+  flex: 1;
+}
+
+.recordEntryTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 2rpx;
+  display: block;
+}
+
+.recordEntryDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.recordEntryArrow {
+  font-size: 40rpx;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+}
+
 .calendarSection {
   padding: 0 $page-padding;
   margin-bottom: $spacing-xl;

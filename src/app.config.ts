@@ -5,7 +5,8 @@ export default defineAppConfig({
     'pages/message/index',
     'pages/record/index',
     'pages/mine/index',
-    'pages/family/index'
+    'pages/family/index',
+    'pages/wear-record/index'
   ],
   window: {
     backgroundTextStyle: 'light',

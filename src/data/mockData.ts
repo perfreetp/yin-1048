@@ -1,6 +1,7 @@
 import type {
   TreatmentStage,
   WearRecord,
+  WearSession,
   Message,
   PainRecord,
   RubberBandRecord,
@@ -21,7 +22,61 @@ export const userInfo: UserInfo = {
   doctor: '王医生',
   hospital: '口腔健康中心',
   startDate: '2025-09-15',
-  totalDays: 540
+  totalDays: 540,
+  currentAligner: 18,
+  totalAligners: 48,
+  doctorNotes: [
+    '每天佩戴牙套不少于22小时',
+    '餐后必须刷牙并清洁牙套',
+    '避免食用过硬、过黏的食物',
+    '每两周更换一副牙套',
+    '如有严重不适请及时联系医生',
+    '橡皮筋每天佩戴3次，每次30分钟'
+  ]
+};
+
+/**
+ * 生成近7天的 session 明细，用于佩戴记录页展示
+ */
+export const generateWearSessions = (): WearSession[] => {
+  const sessions: WearSession[] = [];
+  const today = dayjs();
+  
+  for (let offset = 6; offset >= 1; offset--) {
+    const baseDay = today.subtract(offset, 'day');
+    // 每天3-5段佩戴
+    const count = 3 + Math.floor(Math.random() * 3);
+    
+    let sessionStart = baseDay.hour(8).minute(0).second(0).valueOf();
+    for (let i = 0; i < count; i++) {
+      const wearMinutes = 180 + Math.floor(Math.random() * 240); // 3-7小时
+      const endTs = sessionStart + wearMinutes * 60000;
+      sessions.push({
+        id: `${baseDay.format('YYYYMMDD')}-${i}-${Math.floor(Math.random()*10000)}`,
+        date: baseDay.format('YYYY-MM-DD'),
+        startTs: sessionStart,
+        endTs,
+        minutes: wearMinutes,
+        note: ['早餐后', '午餐后', '晚餐后', '清洁后', '其他'][Math.min(i, 4)]
+      });
+      // 下一段间隔 20-60 分钟
+      sessionStart = endTs + (20 + Math.floor(Math.random() * 40)) * 60000;
+    }
+  }
+  
+  // 今天：模拟正在佩戴，给一段进行中的 session
+  const todayStr = today.format('YYYY-MM-DD');
+  const todayStart = today.hour(9).minute(0).second(0).valueOf();
+  sessions.push({
+    id: `${todayStr}-0-now`,
+    date: todayStr,
+    startTs: todayStart,
+    endTs: null,
+    minutes: Math.floor((Date.now() - todayStart) / 60000),
+    note: '早餐后'
+  });
+  
+  return sessions;
 };
 
 export const treatmentStages: TreatmentStage[] = [

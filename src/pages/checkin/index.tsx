@@ -173,6 +173,15 @@ const CheckinPage: React.FC = () => {
         </View>
       </View>
 
+      <View className={styles.recordEntry} onClick={() => Taro.navigateTo({ url: '/pages/wear-record/index' })}>
+        <View className={styles.recordEntryIcon}>📋</View>
+        <View className={styles.recordEntryContent}>
+          <Text className={styles.recordEntryTitle}>佩戴记录明细</Text>
+          <Text className={styles.recordEntryDesc}>按日期查看每段戴上/取下，误点可修正</Text>
+        </View>
+        <Text className={styles.recordEntryArrow}>›</Text>
+      </View>
+
       <View className={styles.calendarSection}>
         <View className={styles.calendarTitle}>
           <Text>本周打卡</Text>
