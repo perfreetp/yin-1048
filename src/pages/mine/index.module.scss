@@ -1,0 +1,281 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $gradient-bg;
+  padding-bottom: 120rpx;
+}
+
+.profileHeader {
+  padding: $spacing-xl $page-padding;
+  background: $gradient-primary;
+  position: relative;
+  overflow: hidden;
+}
+
+.profileCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  position: relative;
+  z-index: 1;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  background: $color-bg-card;
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.userName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: $spacing-xs;
+}
+
+.userDesc {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.treatmentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  margin-top: $spacing-sm;
+}
+
+/* 治疗概览 */
+.overviewSection {
+  padding: 0 $page-padding;
+  margin-top: -40rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.overviewCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: 0 8rpx 32rpx rgba(124, 140, 246, 0.15);
+}
+
+.overviewTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.overviewGrid {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.overviewItem {
+  flex: 1;
+  text-align: center;
+}
+
+.overviewValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-bold;
+  color: $color-primary;
+  margin-bottom: 4rpx;
+}
+
+.overviewLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+/* 功能列表 */
+.menuSection {
+  padding: $spacing-lg $page-padding 0;
+}
+
+.menuCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.menuIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.iconPurple {
+  background: rgba(124, 140, 246, 0.15);
+}
+
+.iconGreen {
+  background: rgba(134, 239, 172, 0.2);
+}
+
+.iconOrange {
+  background: rgba(253, 186, 116, 0.2);
+}
+
+.iconBlue {
+  background: rgba(125, 211, 252, 0.2);
+}
+
+.iconGray {
+  background: $color-bg-soft;
+}
+
+.menuContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+}
+
+.menuDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.menuArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+}
+
+/* 开关 */
+.switchWrap {
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.switch {
+  width: 80rpx;
+  height: 48rpx;
+  border-radius: $radius-round;
+  background: $color-text-disabled;
+  position: relative;
+  transition: all $transition-base;
+}
+
+.switchOn {
+  background: $color-primary;
+}
+
+.switchDot {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all $transition-base;
+}
+
+.switchOn .switchDot {
+  left: 36rpx;
+}
+
+/* 底部 */
+.bottomSection {
+  padding: $spacing-xl $page-padding;
+  text-align: center;
+}
+
+.versionText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+/* 家属卡片 */
+.familyCard {
+  margin-top: $spacing-md;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(124, 140, 246, 0.1) 0%, rgba(134, 239, 172, 0.1) 100%);
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.familyIcon {
+  font-size: 48rpx;
+}
+
+.familyInfo {
+  flex: 1;
+}
+
+.familyTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.familyDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.familyBtn {
+  @include button-reset;
+  padding: $spacing-sm $spacing-md;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  border-radius: $radius-button;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
