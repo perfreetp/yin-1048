@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, Button, Input } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useRouter } from '@tarojs/taro';
 import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
@@ -14,7 +14,9 @@ const MinePage: React.FC = () => {
     settings, 
     updateSettings, 
     getWeeklyReport,
-    syncWithStorage
+    syncWithStorage,
+    saveFamilyShareCode,
+    getFamilyShareCode
   } = useTreatmentStore();
 
   const [showTravelModal, setShowTravelModal] = useState(false);
@@ -79,7 +81,11 @@ const MinePage: React.FC = () => {
   };
 
   const handleFamilyShare = () => {
-    const shareCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    let shareCode = getFamilyShareCode();
+    if (!shareCode) {
+      shareCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      saveFamilyShareCode(shareCode);
+    }
     const shareUrl = `orthodontic://family?code=${shareCode}`;
     
     Taro.setClipboardData({
@@ -87,11 +93,25 @@ const MinePage: React.FC = () => {
       success: () => {
         Taro.showModal({
           title: '家属代看链接已复制',
-          content: `链接已复制到剪贴板，发送给家属即可查看您的治疗进度。\n\n邀请码：${shareCode}\n\n家属可在小程序首页输入邀请码查看进度。`,
-          confirmText: '好的',
-          showCancel: false
+          content: `链接已复制到剪贴板，发送给家属即可查看您的治疗进度。\n\n邀请码：${shareCode}\n\n家属在小程序打开链接或输入邀请码即可查看。`,
+          confirmText: '立即预览',
+          cancelText: '好的',
+          success: (res) => {
+            if (res.confirm) {
+              Taro.navigateTo({
+                url: `/pages/family/index?code=${shareCode}&preview=1`
+              });
+            }
+          }
         });
       }
+    });
+  };
+
+  const handleFamilyEnter = () => {
+    const shareCode = getFamilyShareCode();
+    Taro.navigateTo({
+      url: `/pages/family/index${shareCode ? `?code=${shareCode}` : ''}`
     });
   };
 
@@ -250,11 +270,24 @@ const MinePage: React.FC = () => {
             <View className={`${styles.menuIcon} ${styles.iconBlue}`}>👨‍👩‍👧</View>
             <View className={styles.menuContent}>
               <Text className={styles.menuTitle}>家属代看</Text>
-              <Text className={styles.menuDesc}>让家人随时了解您的治疗进度</Text>
+              <Text className={styles.menuDesc}>
+                {getFamilyShareCode() 
+                  ? `邀请码：${getFamilyShareCode()} · 点击重新分享`
+                  : '让家人随时了解您的治疗进度'
+                }
+              </Text>
             </View>
             <Button className={styles.familyBtn} onClick={(e) => { e.stopPropagation(); handleFamilyShare(); }}>
               分享
             </Button>
+          </View>
+          <View className={styles.menuItem} onClick={handleFamilyEnter}>
+            <View className={`${styles.menuIcon} ${styles.iconBlue}`}>🔗</View>
+            <View className={styles.menuContent}>
+              <Text className={styles.menuTitle}>家属查看页</Text>
+              <Text className={styles.menuDesc}>模拟家属视角查看治疗进度</Text>
+            </View>
+            <Text className={styles.menuArrow}>›</Text>
           </View>
         </View>
       </View>

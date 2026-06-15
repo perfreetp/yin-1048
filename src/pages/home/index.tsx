@@ -16,7 +16,10 @@ const HomePage: React.FC = () => {
     appointmentRecords,
     getTodayDuration,
     getWeeklyReport,
-    syncWithStorage
+    getCurrentSessionStartText,
+    getCurrentSessionElapsedText,
+    syncWithStorage,
+    settings
   } = useTreatmentStore();
 
   const [tick, setTick] = useState(0);
@@ -27,16 +30,17 @@ const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!isWearing) return;
     const timer = setInterval(() => {
       setTick(prev => prev + 1);
-    }, 60000);
+    }, 30000);
     return () => clearInterval(timer);
-  }, [isWearing]);
+  }, []);
 
   const currentStage = useMemo(() => stages.find(s => s.isCurrent), [stages]);
   
   const todayDuration = useMemo(() => getTodayDuration(), [getTodayDuration, tick]);
+  const sessionStartText = useMemo(() => getCurrentSessionStartText(), [getCurrentSessionStartText, tick]);
+  const sessionElapsedText = useMemo(() => getCurrentSessionElapsedText(), [getCurrentSessionElapsedText, tick]);
   const targetDuration = 1320;
 
   const weeklyReport = useMemo(() => getWeeklyReport(), [getWeeklyReport, tick]);
@@ -59,12 +63,25 @@ const HomePage: React.FC = () => {
   }, [stages]);
 
   const handleToggleWear = () => {
-    toggleWear();
-    Taro.showToast({
-      title: isWearing ? '已取下牙套' : '开始佩戴计时',
-      icon: 'none',
-      duration: 1500
-    });
+    const result = toggleWear();
+    setTick(prev => prev + 1);
+    
+    if (result && result.durations) {
+      const summary = result.durations
+        .map(d => `${dayjs(d.date).format('MM/DD')} 增加${formatDuration(d.minutes)}`)
+        .join('\n');
+      Taro.showToast({
+        title: `已取下，共${formatDuration(result.durations.reduce((s, d) => s + d.minutes, 0))}`,
+        icon: 'none',
+        duration: 2000
+      });
+    } else if (isWearing === false) {
+      Taro.showToast({
+        title: '开始计时，加油！',
+        icon: 'none',
+        duration: 1500
+      });
+    }
   };
 
   const getGreeting = () => {
@@ -76,12 +93,26 @@ const HomePage: React.FC = () => {
     return '晚上好';
   };
 
+  const todayRecord = useTreatmentStore.getState().getTodayRecord();
+
   return (
     <View className={styles.page}>
       <View className={styles.header}>
         <Text className={styles.greeting}>{getGreeting()}，{userInfo.name}</Text>
         <Text className={styles.subGreeting}>今天是正畸第 {getDaysBetween(userInfo.startDate, dayjs().format('YYYY-MM-DD'))} 天</Text>
       </View>
+
+      {settings.travelMode && (
+        <View className={styles.travelBanner}>
+          <View className={styles.travelBannerIcon}>✈️</View>
+          <View className={styles.travelBannerContent}>
+            <Text className={styles.travelBannerTitle}>出差旅行模式中</Text>
+            <Text className={styles.travelBannerDesc}>
+              {dayjs(settings.travelStartDate).format('MM.DD')} - {dayjs(settings.travelEndDate).format('MM.DD')} · 提醒已调整为旅行节奏
+            </Text>
+          </View>
+        </View>
+      )}
 
       <View className={styles.progressSection}>
         <View className={styles.progressCard}>
@@ -123,7 +154,26 @@ const HomePage: React.FC = () => {
           <View className={styles.todayInfo}>
             <Text className={styles.todayLabel}>今日已佩戴</Text>
             <Text className={styles.todayDuration}>{formatDuration(todayDuration)}</Text>
-            <Text className={styles.todayTarget}>目标 {formatDuration(targetDuration)} · {Math.min(100, Math.round(todayDuration / targetDuration * 100))}%</Text>
+            <Text className={styles.todayTarget}>
+              目标 {formatDuration(targetDuration)} · {Math.min(100, Math.round(todayDuration / targetDuration * 100))}%
+            </Text>
+            
+            {isWearing && sessionStartText && (
+              <View className={styles.sessionInfo}>
+                <Text className={styles.sessionText}>
+                  🕒 本次从 {sessionStartText} 开始
+                  {sessionElapsedText && ` · 已戴${sessionElapsedText}`}
+                </Text>
+              </View>
+            )}
+            
+            {!isWearing && todayRecord && todayRecord.removeCount > 0 && (
+              <View className={styles.sessionInfo}>
+                <Text className={styles.sessionTextOff}>
+                  共戴上 {todayRecord.wearCount} 次 · 取下 {todayRecord.removeCount} 次
+                </Text>
+              </View>
+            )}
           </View>
           <Button 
             className={`${styles.wearButton} ${!isWearing ? styles.wearButtonOff : ''}`}

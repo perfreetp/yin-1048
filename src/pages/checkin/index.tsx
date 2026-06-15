@@ -15,7 +15,10 @@ const CheckinPage: React.FC = () => {
     addRemoveRecord,
     getTodayDuration,
     getWeeklyReport,
-    syncWithStorage
+    getCurrentSessionStartText,
+    getCurrentSessionElapsedText,
+    syncWithStorage,
+    getTodayRecord
   } = useTreatmentStore();
 
   const [tick, setTick] = useState(0);
@@ -26,16 +29,18 @@ const CheckinPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!isWearing) return;
     const timer = setInterval(() => {
       setTick(prev => prev + 1);
-    }, 60000);
+    }, 30000);
     return () => clearInterval(timer);
-  }, [isWearing]);
+  }, []);
 
   const todayDuration = useMemo(() => getTodayDuration(), [getTodayDuration, tick]);
+  const sessionStartText = useMemo(() => getCurrentSessionStartText(), [getCurrentSessionStartText, tick]);
+  const sessionElapsedText = useMemo(() => getCurrentSessionElapsedText(), [getCurrentSessionElapsedText, tick]);
   const targetDuration = 1320;
   const weeklyReport = useMemo(() => getWeeklyReport(), [getWeeklyReport, tick]);
+  const todayRecord = getTodayRecord();
 
   const weekDays = useMemo(() => generateWeekDays(), []);
 
@@ -45,18 +50,33 @@ const CheckinPage: React.FC = () => {
   };
 
   const handleToggleWear = () => {
-    toggleWear();
+    const result = toggleWear();
     setTick(prev => prev + 1);
-    Taro.showToast({
-      title: isWearing ? '已结束计时' : '开始佩戴计时',
-      icon: 'none',
-      duration: 1500
-    });
+    
+    if (result && result.durations) {
+      const total = result.durations.reduce((s, d) => s + d.minutes, 0);
+      const dateTexts = result.durations.map(d => 
+        `${dayjs(d.date).format('MM/DD')} +${formatDuration(d.minutes)}`
+      ).join('  ');
+      Taro.showModal({
+        title: `已取下，本次共${formatDuration(total)}`,
+        content: dateTexts,
+        confirmText: '好的',
+        showCancel: false
+      });
+    } else if (!isWearing) {
+      Taro.showToast({
+        title: '开始计时！',
+        icon: 'success',
+        duration: 1500
+      });
+    }
   };
 
   const handleQuickRemove = (type: string) => {
     const today = dayjs().format('YYYY-MM-DD');
     addRemoveRecord(today);
+    setTick(prev => prev + 1);
     Taro.showToast({
       title: `已记录${type}摘戴`,
       icon: 'success',
@@ -71,6 +91,7 @@ const CheckinPage: React.FC = () => {
   };
 
   const { hours, mins } = formatTimeDisplay(todayDuration);
+  const progress = Math.min(100, Math.round(todayDuration / targetDuration * 100));
 
   return (
     <View className={styles.page}>
@@ -86,12 +107,37 @@ const CheckinPage: React.FC = () => {
             {hours}<Text className={styles.statusUnit}>小时</Text> {mins.toString().padStart(2, '0')}<Text className={styles.statusUnit}>分钟</Text>
           </View>
           <Text className={styles.statusProgress}>
-            目标 {formatDuration(targetDuration)} · 已完成 {Math.min(100, Math.round(todayDuration / targetDuration * 100))}%
+            目标 {formatDuration(targetDuration)} · {progress}%
           </Text>
+
+          {isWearing && sessionStartText && (
+            <View className={styles.sessionInfoWear}>
+              <Text className={styles.sessionInfoText}>
+                🕒 {sessionStartText} 开始 · 已持续{sessionElapsedText}
+              </Text>
+            </View>
+          )}
           
           <View className={`${styles.wearStatus} ${isWearing ? styles.wearing : styles.notWearing}`}>
             <View className={styles.statusDot} />
             <Text>{isWearing ? '正在佩戴中' : '已取下牙套'}</Text>
+          </View>
+
+          <View className={styles.progressRingWrap}>
+            <View className={styles.progressRing}>
+              <View 
+                className={styles.progressRingFill} 
+                style={{ 
+                  background: `conic-gradient(#7C8CF6 ${progress}%, #EFEFEF ${progress}% 100%)` 
+                }} 
+              />
+              <View className={styles.progressRingInner}>
+                <Text className={styles.progressRingPercent}>{progress}%</Text>
+                <Text className={styles.progressRingLabel}>
+                  {progress >= 100 ? '目标已达成' : '离目标还差'}
+                </Text>
+              </View>
+            </View>
           </View>
 
           <Button 
@@ -100,6 +146,12 @@ const CheckinPage: React.FC = () => {
           >
             {isWearing ? '取下牙套' : '戴上牙套'}
           </Button>
+          
+          <View className={styles.recordCountRow}>
+            <Text className={styles.recordCount}>
+              戴上 {todayRecord?.wearCount || 0} 次 · 取下 {todayRecord?.removeCount || 0} 次
+            </Text>
+          </View>
         </View>
       </View>
 

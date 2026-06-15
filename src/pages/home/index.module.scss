@@ -6,6 +6,58 @@
   padding-bottom: 120rpx;
 }
 
+/* 出差模式 banner */
+.travelBanner {
+  margin: 0 $page-padding $spacing-lg;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, rgba(253, 186, 116, 0.2) 0%, rgba(251, 146, 60, 0.1) 100%);
+  border: 1rpx solid rgba(253, 186, 116, 0.4);
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.travelBannerIcon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.travelBannerContent {
+  flex: 1;
+}
+
+.travelBannerTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-warning-dark;
+  margin-bottom: 2rpx;
+}
+
+.travelBannerDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+/* 佩戴 session 信息 */
+.sessionInfo {
+  margin-top: $spacing-sm;
+}
+
+.sessionText {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+
+.sessionTextOff {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
 .header {
   padding: $spacing-lg $page-padding $spacing-xl;
 }

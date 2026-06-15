@@ -25,6 +25,7 @@ import {
 import dayjs from 'dayjs';
 
 const STORAGE_KEY = 'orthodontic_treatment_data';
+const FAMILY_SHARE_KEY = 'orthodontic_family_share_code';
 
 interface PersistedData {
   wearRecords: WearRecord[];
@@ -36,10 +37,11 @@ interface PersistedData {
   isWearing: boolean;
   currentWearStartTime: number | null;
   lastRecordDate: string;
-  lastWeekReportDate: string;
+  currentSessionStartTime: number | null;
 }
 
-const getTodayStr = () => dayjs().format('YYYY-MM-DD');
+const getTodayStr = (ts: number | string = Date.now()) => dayjs(ts).format('YYYY-MM-DD');
+const getStartOfDayTs = (dateStr: string) => dayjs(dateStr).startOf('day').valueOf();
 
 const loadFromStorage = (): PersistedData | null => {
   try {
@@ -62,37 +64,80 @@ const saveToStorage = (data: PersistedData) => {
   }
 };
 
-const ensureTodayRecord = (records: WearRecord[]): WearRecord[] => {
-  const today = getTodayStr();
-  const todayRecord = records.find(r => r.date === today);
-  
-  if (!todayRecord) {
-    const newRecord: WearRecord = {
-      date: today,
+const getOrCreateRecord = (records: WearRecord[], date: string): [WearRecord[], WearRecord] => {
+  let target = records.find(r => r.date === date);
+  if (!target) {
+    target = {
+      date,
       duration: 0,
       wearCount: 0,
       removeCount: 0,
       isCompleted: false
     };
-    return [...records, newRecord];
+    return [[...records, target], target];
   }
-  return records;
+  return [records, target];
 };
 
-const ensureTodayRubberBand = (records: RubberBandRecord[]): RubberBandRecord[] => {
-  const today = getTodayStr();
-  const todayRecord = records.find(r => r.date === today);
+const ensureRubberBand = (records: RubberBandRecord[], date: string): RubberBandRecord[] => {
+  if (records.find(r => r.date === date)) return records;
+  const newRecord: RubberBandRecord = {
+    date,
+    times: 0,
+    totalTimes: 3,
+    isCompleted: false
+  };
+  return [newRecord, ...records];
+};
+
+/**
+ * 拆分跨自然日的佩戴时长
+ * 例如：从 23:30 戴到 01:30，共120分钟
+ *   -> 昨天分到 30分钟（23:30-24:00）
+ *   -> 今天分到 90分钟（00:00-01:30）
+ */
+const splitDurationByDays = (startTs: number, endTs: number): Array<{ date: string; minutes: number }> => {
+  if (endTs <= startTs) return [];
   
-  if (!todayRecord) {
-    const newRecord: RubberBandRecord = {
-      date: today,
-      times: 0,
-      totalTimes: 3,
-      isCompleted: false
-    };
-    return [newRecord, ...records];
+  const results: Array<{ date: string; minutes: number }> = [];
+  let currentTs = startTs;
+  
+  while (currentTs < endTs) {
+    const dateStr = getTodayStr(currentTs);
+    const dayEndTs = getStartOfDayTs(dateStr) + 24 * 60 * 60 * 1000;
+    const segEnd = Math.min(endTs, dayEndTs);
+    const minutes = Math.floor((segEnd - currentTs) / 60000);
+    
+    if (minutes > 0) {
+      results.push({ date: dateStr, minutes });
+    }
+    currentTs = segEnd;
   }
-  return records;
+  
+  return results;
+};
+
+/**
+ * 给某日添加佩戴时长，并更新完成状态
+ */
+const addDurationToRecord = (
+  records: WearRecord[],
+  date: string,
+  minutes: number,
+  wearInc: number = 0,
+  removeInc: number = 0
+): WearRecord[] => {
+  const [newRecords, target] = getOrCreateRecord(records, date);
+  const newDuration = Math.max(0, target.duration + minutes);
+  const newWear = target.wearCount + wearInc;
+  const newRemove = target.removeCount + removeInc;
+  const isCompleted = newDuration >= 1320;
+  
+  return newRecords.map(r =>
+    r.date === date
+      ? { ...r, duration: newDuration, wearCount: newWear, removeCount: newRemove, isCompleted }
+      : r
+  );
 };
 
 interface TreatmentState {
@@ -110,10 +155,13 @@ interface TreatmentState {
   currentWearStartTime: number | null;
   
   persist: () => void;
-  toggleWear: () => void;
+  toggleWear: () => { durations: Array<{ date: string; minutes: number }> } | null;
+  settleCrossDay: () => void;
   addRemoveRecord: (date: string) => void;
   getTodayDuration: () => number;
   getCurrentWearMinutes: () => number;
+  getCurrentSessionStartText: () => string | null;
+  getCurrentSessionElapsedText: () => string | null;
   
   markMessageRead: (id: number) => void;
   markAllMessagesRead: () => void;
@@ -128,6 +176,10 @@ interface TreatmentState {
   getWeeklyReport: () => WeeklyReport;
   
   syncWithStorage: () => void;
+  
+  // 家属分享
+  saveFamilyShareCode: (code: string) => void;
+  getFamilyShareCode: () => string | null;
 }
 
 const persisted = loadFromStorage();
@@ -138,33 +190,37 @@ const initialRubberBandRecords = persisted?.rubberBandRecords || defaultRubberBa
 const initialOralPhotos = persisted?.oralPhotos || defaultOralPhotos;
 const initialSettings = persisted?.settings || defaultSettings;
 const initialIsWearing = persisted?.isWearing ?? true;
-const initialCurrentWearStartTime = persisted?.currentWearStartTime || null;
+let initialCurrentWearStartTime = persisted?.currentWearStartTime || null;
 
-const initializeRecords = () => {
-  let wearRecords = ensureTodayRecord(initialWearRecords);
-  let rubberBandRecords = ensureTodayRubberBand(initialRubberBandRecords);
-  
+let wearRecordsInit = initialWearRecords;
+let rubberBandInit = ensureRubberBand(initialRubberBandRecords, getTodayStr());
+
+// 如果正在佩戴且跨了天，先做一次拆分
+if (initialIsWearing && initialCurrentWearStartTime) {
+  const startDay = getTodayStr(initialCurrentWearStartTime);
   const today = getTodayStr();
-  if (initialIsWearing && !initialCurrentWearStartTime) {
-    const todayRecord = wearRecords.find(r => r.date === today);
-    if (todayRecord && todayRecord.duration > 0) {
+  if (startDay !== today) {
+    const startOfToday = getStartOfDayTs(today);
+    const splits = splitDurationByDays(initialCurrentWearStartTime, startOfToday);
+    for (const s of splits) {
+      wearRecordsInit = addDurationToRecord(wearRecordsInit, s.date, s.minutes);
     }
+    // 更新佩戴开始时间到今天0点
+    initialCurrentWearStartTime = startOfToday;
   }
-  
-  return { wearRecords, rubberBandRecords };
-};
-
-const { wearRecords: initWearRecords, rubberBandRecords: initRubberBandRecords } = initializeRecords();
+}
+// 确保今天有记录
+[wearRecordsInit] = getOrCreateRecord(wearRecordsInit, getTodayStr());
 
 export const useTreatmentStore = create<TreatmentState>((set, get) => ({
   userInfo: defaultUserInfo,
   stages: treatmentStages,
   appointmentRecords,
   
-  wearRecords: initWearRecords,
+  wearRecords: wearRecordsInit,
   messages: initialMessages,
   painRecords: initialPainRecords,
-  rubberBandRecords: initRubberBandRecords,
+  rubberBandRecords: rubberBandInit,
   oralPhotos: initialOralPhotos,
   settings: initialSettings,
   isWearing: initialIsWearing,
@@ -182,7 +238,7 @@ export const useTreatmentStore = create<TreatmentState>((set, get) => ({
       isWearing: state.isWearing,
       currentWearStartTime: state.currentWearStartTime,
       lastRecordDate: getTodayStr(),
-      lastWeekReportDate: getTodayStr()
+      currentSessionStartTime: state.currentWearStartTime
     };
     saveToStorage(data);
   },
@@ -190,7 +246,30 @@ export const useTreatmentStore = create<TreatmentState>((set, get) => ({
   getCurrentWearMinutes: () => {
     const { isWearing, currentWearStartTime } = get();
     if (!isWearing || !currentWearStartTime) return 0;
-    return Math.floor((Date.now() - currentWearStartTime) / 60000);
+    const now = Date.now();
+    const startDay = getTodayStr(currentWearStartTime);
+    const today = getTodayStr();
+    
+    if (startDay === today) {
+      return Math.floor((now - currentWearStartTime) / 60000);
+    }
+    const startOfToday = getStartOfDayTs(today);
+    return Math.floor((now - startOfToday) / 60000);
+  },
+
+  getCurrentSessionStartText: () => {
+    const { isWearing, currentWearStartTime } = get();
+    if (!isWearing || !currentWearStartTime) return null;
+    return dayjs(currentWearStartTime).format('HH:mm');
+  },
+
+  getCurrentSessionElapsedText: () => {
+    const { isWearing, currentWearStartTime } = get();
+    if (!isWearing || !currentWearStartTime) return null;
+    const minutes = Math.floor((Date.now() - currentWearStartTime) / 60000);
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h > 0 ? `${h}小时${m}分` : `${m}分钟`;
   },
 
   getTodayDuration: () => {
@@ -201,59 +280,74 @@ export const useTreatmentStore = create<TreatmentState>((set, get) => ({
     return baseDuration + get().getCurrentWearMinutes();
   },
 
+  settleCrossDay: () => {
+    const { isWearing, currentWearStartTime, wearRecords } = get();
+    if (!isWearing || !currentWearStartTime) return;
+    
+    const startDay = getTodayStr(currentWearStartTime);
+    const today = getTodayStr();
+    if (startDay === today) return;
+    
+    const startOfToday = getStartOfDayTs(today);
+    const splits = splitDurationByDays(currentWearStartTime, startOfToday);
+    let newRecords = wearRecords;
+    for (const s of splits) {
+      newRecords = addDurationToRecord(newRecords, s.date, s.minutes);
+    }
+    
+    set({
+      wearRecords: newRecords,
+      currentWearStartTime: startOfToday
+    });
+    get().persist();
+  },
+
   toggleWear: () => {
     const { isWearing, currentWearStartTime, wearRecords } = get();
-    const today = getTodayStr();
+    const now = Date.now();
     
     if (isWearing && currentWearStartTime) {
-      const sessionDuration = Math.floor((Date.now() - currentWearStartTime) / 60000);
+      const splits = splitDurationByDays(currentWearStartTime, now);
+      if (splits.length === 0) return null;
       
-      const updatedRecords = wearRecords.map(record => {
-        if (record.date === today) {
-          const newDuration = record.duration + Math.max(0, sessionDuration);
-          return {
-            ...record,
-            duration: newDuration,
-            removeCount: record.removeCount + 1,
-            isCompleted: newDuration >= 1320
-          };
-        }
-        return record;
-      });
+      let newRecords = wearRecords;
+      for (let i = 0; i < splits.length; i++) {
+        const s = splits[i];
+        const isLast = i === splits.length - 1;
+        newRecords = addDurationToRecord(
+          newRecords,
+          s.date,
+          s.minutes,
+          i === 0 ? 0 : 0,
+          isLast ? 1 : 0
+        );
+      }
       
       set({
         isWearing: false,
         currentWearStartTime: null,
-        wearRecords: updatedRecords
+        wearRecords: newRecords
       });
+      get().persist();
+      return { durations: splits };
+      
     } else {
-      const updatedRecords = wearRecords.map(record => {
-        if (record.date === today) {
-          return {
-            ...record,
-            wearCount: record.wearCount + 1
-          };
-        }
-        return record;
-      });
+      const today = getTodayStr();
+      let newRecords = addDurationToRecord(wearRecords, today, 0, 1, 0);
       
       set({
         isWearing: true,
-        currentWearStartTime: Date.now(),
-        wearRecords: updatedRecords
+        currentWearStartTime: now,
+        wearRecords: newRecords
       });
+      get().persist();
+      return null;
     }
-    
-    get().persist();
   },
 
   addRemoveRecord: (date: string) => {
     set(state => ({
-      wearRecords: state.wearRecords.map(record =>
-        record.date === date
-          ? { ...record, removeCount: record.removeCount + 1 }
-          : record
-      )
+      wearRecords: addDurationToRecord(state.wearRecords, date, 0, 0, 1)
     }));
     get().persist();
   },
@@ -356,16 +450,38 @@ export const useTreatmentStore = create<TreatmentState>((set, get) => ({
   },
 
   syncWithStorage: () => {
-    const { wearRecords, rubberBandRecords } = get();
-    let updatedWear = ensureTodayRecord(wearRecords);
-    let updatedRubber = ensureTodayRubberBand(rubberBandRecords);
+    get().settleCrossDay();
     
-    if (updatedWear !== wearRecords || updatedRubber !== rubberBandRecords) {
-      set({
-        wearRecords: updatedWear,
-        rubberBandRecords: updatedRubber
-      });
-      get().persist();
+    set(state => {
+      const today = getTodayStr();
+      let [newWear, _] = getOrCreateRecord(state.wearRecords, today);
+      const newRubber = ensureRubberBand(state.rubberBandRecords, today);
+      
+      if (newWear === state.wearRecords && newRubber === state.rubberBandRecords) {
+        return {};
+      }
+      return {
+        wearRecords: newWear,
+        rubberBandRecords: newRubber
+      };
+    });
+    get().persist();
+  },
+
+  saveFamilyShareCode: (code: string) => {
+    try {
+      Taro.setStorageSync(FAMILY_SHARE_KEY, code);
+    } catch (e) {
+      console.error('[Store] saveFamilyShareCode error', e);
+    }
+  },
+
+  getFamilyShareCode: () => {
+    try {
+      const code = Taro.getStorageSync(FAMILY_SHARE_KEY);
+      return code || null;
+    } catch (e) {
+      return null;
     }
   }
 }));

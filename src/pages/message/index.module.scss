@@ -171,3 +171,79 @@
   background: $gradient-primary;
   color: $color-text-white;
 }
+
+/* 出差模式提示 */
+.travelNotice {
+  margin: 0 $page-padding $spacing-md;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba(253, 186, 116, 0.25) 0%, rgba(251, 146, 60, 0.1) 100%);
+  border: 1rpx solid rgba(253, 186, 116, 0.5);
+  border-radius: $radius-lg;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.travelNoticeIcon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.travelNoticeBody {
+  flex: 1;
+}
+
+.travelNoticeTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-warning-dark;
+}
+
+.travelNoticeBadge {
+  font-size: $font-size-xs;
+  background: rgba(251, 146, 60, 0.3);
+  color: $color-warning-dark;
+  padding: 2rpx $spacing-sm;
+  border-radius: $radius-round;
+}
+
+.travelNoticeDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.travelNoticeTips {
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.travelNoticeTip {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+/* 消息内旅行标签 */
+.messageTravelMode {
+  border: 1rpx solid rgba(253, 186, 116, 0.3);
+}
+
+.travelTag {
+  margin-top: $spacing-sm;
+  display: inline-block;
+  padding: 4rpx $spacing-sm;
+  background: rgba(253, 186, 116, 0.15);
+  border-radius: $radius-round;
+}
+
+.travelTag Text {
+  font-size: $font-size-xs;
+  color: $color-warning-dark;
+  font-weight: $font-weight-medium;
+}

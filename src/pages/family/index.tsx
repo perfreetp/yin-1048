@@ -1,11 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Button, Image, Input } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useRouter } from '@tarojs/taro';
 import { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { useTreatmentStore } from '@/store/useTreatmentStore';
 import { formatDuration, getDaysBetween, getProgressPercent } from '@/utils/format';
 import dayjs from 'dayjs';
+
+const FAMILY_ACCESS_KEY = 'orthodontic_family_access';
+const FAMILY_CODE_KEY = 'orthodontic_family_code';
+const FAMILY_VERIFIED_KEY = 'orthodontic_family_verified';
 
 const FamilyPage: React.FC = () => {
   const {
@@ -14,22 +18,102 @@ const FamilyPage: React.FC = () => {
     appointmentRecords,
     getTodayDuration,
     getWeeklyReport,
-    getUnreadMessageCount
+    getUnreadMessageCount,
+    getFamilyShareCode
   } = useTreatmentStore();
 
+  const router = useRouter();
   const [hasAccess, setHasAccess] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
   const [tick, setTick] = useState(0);
+  const [isPreview, setIsPreview] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  useDidShow(() => {
-    const familyAccess = Taro.getStorageSync('family_access');
-    const familyCode = Taro.getStorageSync('family_code');
-    if (familyAccess && familyCode) {
-      setHasAccess(true);
-      setInviteCode(familyCode);
+  useEffect(() => {
+    const urlCode = router.params?.code;
+    const isPreviewMode = router.params?.preview === '1';
+    
+    if (isPreviewMode) {
+      setIsPreview(true);
+    }
+
+    const savedAccess = Taro.getStorageSync(FAMILY_ACCESS_KEY);
+    const savedCode = Taro.getStorageSync(FAMILY_CODE_KEY);
+    const savedVerified = Taro.getStorageSync(FAMILY_VERIFIED_KEY);
+
+    if (urlCode) {
+      setInviteCode(urlCode.toUpperCase());
+      setTimeout(() => {
+        validateAndAccess(urlCode.toUpperCase(), true);
+      }, 200);
+    } else if (savedAccess && savedCode && savedVerified) {
+      const valid = validateCode(savedCode);
+      if (valid) {
+        setHasAccess(true);
+        setIsVerified(true);
+        setInviteCode(savedCode);
+      } else {
+        Taro.removeStorageSync(FAMILY_ACCESS_KEY);
+        Taro.removeStorageSync(FAMILY_CODE_KEY);
+        Taro.removeStorageSync(FAMILY_VERIFIED_KEY);
+      }
     }
     setTick(prev => prev + 1);
+  }, [router.params]);
+
+  useDidShow(() => {
+    setTick(prev => prev + 1);
   });
+
+  const validateCode = (code: string): boolean => {
+    if (!code || code.length < 6) return false;
+    const storedCode = getFamilyShareCode();
+    if (!storedCode) return code === 'TEST1234';
+    return storedCode.toUpperCase() === code.toUpperCase();
+  };
+
+  const validateAndAccess = (code: string, autoMode: boolean = false) => {
+    setErrorMsg('');
+    if (!code || code.length < 6) {
+      if (!autoMode) {
+        setErrorMsg('请输入完整的邀请码');
+        Taro.showToast({
+          title: '请输入完整的邀请码',
+          icon: 'none',
+          duration: 1500
+        });
+      }
+      return;
+    }
+
+    const isValid = validateCode(code);
+    
+    if (!isValid) {
+      setErrorMsg('邀请码不正确，请检查后重试');
+      Taro.showToast({
+        title: '邀请码不正确',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
+    Taro.setStorageSync(FAMILY_ACCESS_KEY, true);
+    Taro.setStorageSync(FAMILY_CODE_KEY, code.toUpperCase());
+    Taro.setStorageSync(FAMILY_VERIFIED_KEY, true);
+    setHasAccess(true);
+    setIsVerified(true);
+    setInviteCode(code.toUpperCase());
+    
+    if (!autoMode) {
+      Taro.showToast({
+        title: '验证成功',
+        icon: 'success',
+        duration: 1500
+      });
+    }
+  };
 
   const currentStage = useMemo(() => stages.find(s => s.isCurrent), [stages]);
   
@@ -55,35 +139,22 @@ const FamilyPage: React.FC = () => {
   }, [stages]);
 
   const handleSubmitCode = () => {
-    if (!inviteCode || inviteCode.length < 6) {
-      Taro.showToast({
-        title: '请输入有效的邀请码',
-        icon: 'none',
-        duration: 1500
-      });
-      return;
-    }
-    
-    Taro.setStorageSync('family_access', true);
-    Taro.setStorageSync('family_code', inviteCode.toUpperCase());
-    setHasAccess(true);
-    Taro.showToast({
-      title: '验证成功',
-      icon: 'success',
-      duration: 1500
-    });
+    validateAndAccess(inviteCode, false);
   };
 
   const handleSwitchAccount = () => {
     Taro.showModal({
       title: '切换账号',
-      content: '确定要退出当前账号吗？',
+      content: '确定要退出当前账号吗？退出后需要重新输入邀请码。',
       success: (res) => {
         if (res.confirm) {
-          Taro.removeStorageSync('family_access');
-          Taro.removeStorageSync('family_code');
+          Taro.removeStorageSync(FAMILY_ACCESS_KEY);
+          Taro.removeStorageSync(FAMILY_CODE_KEY);
+          Taro.removeStorageSync(FAMILY_VERIFIED_KEY);
           setHasAccess(false);
+          setIsVerified(false);
           setInviteCode('');
+          setErrorMsg('');
         }
       }
     });
@@ -110,23 +181,41 @@ const FamilyPage: React.FC = () => {
           </Text>
         </View>
 
+        {isPreview && (
+          <View className={styles.previewBanner}>
+            <Text>👤 预览模式：您正在体验家属视角</Text>
+          </View>
+        )}
+
         <View className={styles.inputSection}>
           <View className={styles.inputCard}>
             <Text className={styles.inputLabel}>请输入邀请码</Text>
             <Input
-              className={styles.codeInput}
+              className={`${styles.codeInput} ${errorMsg ? styles.codeInputError : ''}`}
               placeholder='请输入8位邀请码'
               value={inviteCode}
-              onInput={(e) => setInviteCode(e.detail.value.toUpperCase())}
+              onInput={(e) => {
+                setInviteCode(e.detail.value.toUpperCase());
+                setErrorMsg('');
+              }}
               maxlength={8}
             />
+            {errorMsg && <Text className={styles.errorMsg}>{errorMsg}</Text>}
             <Button className={styles.submitBtn} onClick={handleSubmitCode}>
               查看进度
             </Button>
-            <Text className={styles.tipText}>
-              💡 邀请码由患者在"我的-家属代看"中生成{'\n'}
-              每位患者对应一个专属邀请码
-            </Text>
+            <View className={styles.tipWrap}>
+              <Text className={styles.tipText}>
+                💡 邀请码由患者在"我的-家属代看"中生成{'\n'}
+                每位患者对应一个专属邀请码{'\n'}
+                邀请码长期有效，验证一次后即可持续查看
+              </Text>
+              {!getFamilyShareCode() && (
+                <Text className={styles.testTip}>
+                  🎯 测试邀请码：TEST1234
+                </Text>
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -136,6 +225,19 @@ const FamilyPage: React.FC = () => {
   return (
     <View className={styles.page}>
       <View className={styles.progressPage}>
+        {isPreview && (
+          <View className={styles.previewBanner}>
+            <Text>👤 预览模式：您正在体验家属视角</Text>
+          </View>
+        )}
+
+        {!isPreview && (
+          <View className={styles.accessBanner}>
+            <Text>🔒 已验证邀请码：{inviteCode}</Text>
+            <Text className={styles.accessHint}>刷新后保持登录状态</Text>
+          </View>
+        )}
+
         {/* 患者信息 */}
         <View className={styles.patientInfo}>
           <Image className={styles.patientAvatar} src={userInfo.avatar} mode='aspectFill' />

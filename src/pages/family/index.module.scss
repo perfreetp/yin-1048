@@ -12,6 +12,73 @@
   text-align: center;
 }
 
+/* 预览和访问 banner */
+.previewBanner {
+  margin: 0 $page-padding $spacing-md;
+  padding: $spacing-md;
+  background: rgba(124, 140, 246, 0.1);
+  border: 1rpx solid rgba(124, 140, 246, 0.3);
+  border-radius: $radius-lg;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.accessBanner {
+  margin: 0 0 $spacing-lg;
+  padding: $spacing-md $spacing-lg;
+  background: rgba(134, 239, 172, 0.15);
+  border: 1rpx solid rgba(134, 239, 172, 0.4);
+  border-radius: $radius-lg;
+}
+
+.accessBanner Text {
+  font-size: $font-size-sm;
+  color: $color-success-dark;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+
+.accessHint {
+  display: block;
+  font-size: $font-size-xs !important;
+  color: $color-text-tertiary !important;
+  font-weight: $font-weight-normal !important;
+  margin-top: 2rpx;
+}
+
+/* 邀请码输入错误样式 */
+.codeInputError {
+  border: 2rpx solid $color-error-dark !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.errorMsg {
+  display: block;
+  text-align: center;
+  margin: -$spacing-md 0 $spacing-lg;
+  font-size: $font-size-xs;
+  color: $color-error-dark;
+  line-height: 1.5;
+}
+
+.tipWrap {
+  margin-top: $spacing-lg;
+  text-align: center;
+}
+
+.testTip {
+  display: block;
+  margin-top: $spacing-md;
+  padding: $spacing-sm;
+  background: rgba(124, 140, 246, 0.08);
+  border-radius: $radius-md;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
 .headerIcon {
   font-size: 80rpx;
   margin-bottom: $spacing-md;
